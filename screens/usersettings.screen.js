@@ -10,7 +10,7 @@ import { serverURL } from "../utils/enums.util";
 const logoutUrl = serverURL + '/logout'; // var serverURL => './utils/enums.util.js'
 const userDataUrl = serverURL + '/user'; // var serverURL => './utils/enums.util.js'
 
-export default function UserSettingScreen ({}) {
+export default function UserSettingScreen ({ navigation }) {
 
     const isFocused = useIsFocused();
     const [isEdit, setIsEdit] = useState(false);
@@ -56,11 +56,16 @@ export default function UserSettingScreen ({}) {
         /**
          * Logout the user
          */
-        axios.post(logoutUrl)
-        .then(res => {
-            if (res.status === 200) {
-                navigation.navigate('Login', {});
+        if (!token) return;
+        axios.post(logoutUrl, {}, {
+            headers: {
+                'X-Authorization': token
             }
+        })
+        .then(res => {
+            console.log(res);
+            console.log('Got here!');
+            navigation.navigate('Login', {});
         })
         .catch(err => {
             console.log(err);
@@ -120,7 +125,7 @@ export default function UserSettingScreen ({}) {
                     </View>
                 }
             </View>
-            <Pressable style={styles['logout-button']} onPress={logout}>
+            <Pressable style={styles['logout-button']} onPress={() => logout()}>
                 <Text style={styles['logout-text']}>Logout</Text>
             </Pressable>
         </View>
