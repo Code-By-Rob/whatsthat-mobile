@@ -3,6 +3,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
+import ChannelSettings from './screens/channel-settings.screen';
+import Channel from './screens/channel.screen';
 import ChatsScreen from './screens/chats.screen';
 import ContactsScreen from './screens/contacts.screen';
 import CreateUser from './screens/create-user.screen';
@@ -11,7 +13,30 @@ import UserSettingScreen from './screens/usersettings.screen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-const isLoggedIn = false;
+
+const ChatStack = createNativeStackNavigator();
+function ChatStackScreen() {
+  return (
+    <ChatStack.Navigator>
+        <Stack.Screen 
+          name='Chats'
+          component={ChatsScreen}
+          options={{ headerShown: false }}
+        />
+      <Stack.Screen 
+        name="Channel"
+        component={Channel}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="ChannelSettings"
+        component={ChannelSettings}
+        options={{ headerShown: false }}
+      />
+      {/* Add extra screens here */}
+    </ChatStack.Navigator>
+  )
+}
 
 function Main() {
   return (
@@ -34,8 +59,9 @@ function Main() {
         },
         tabBarActiveTintColor: '#4f46e5',
         tabBarInactiveTintColor: '#4f46e5',
+        headerShown: false
       })}>
-        <Tab.Screen name='Chats' component={ChatsScreen} options={{ headerShown: false }} />
+        <Tab.Screen name='Chats' component={ChatStackScreen} />
         <Tab.Screen name='Contacts' component={ContactsScreen} />
         {/* <Tab.Screen name='Contact' component={ContactScreen} /> */}
         {/* <Tab.Screen name='Chat' component={ChatScreen} /> */}

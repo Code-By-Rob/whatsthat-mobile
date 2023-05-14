@@ -1,9 +1,9 @@
 import { Dimensions, Image, Pressable, StyleSheet, View } from 'react-native';
 
-export default function ChatHeader({}) {
+export default function ChatHeader({ showModal = () => console.log('Create chat!') }) {
     return (
         <View style={styles.header}>
-            <Pressable onPress={() => console.log('Create chat!')}>
+            <Pressable onPress={showModal}>
                 <Image 
                     style={styles.button}
                     source={require('../assets/write.png')}
