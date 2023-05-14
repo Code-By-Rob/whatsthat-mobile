@@ -9,14 +9,15 @@ import {
     Text,
     View
 } from 'react-native';
-export default function ChannelHeader({ navigation, name }) {
+
+export default function ChannelHeader({ navigation, name, chat_id }) {
     return (
         <View style={styles.header}>
             <Pressable onPress={() => navigation.goBack()}>
                 <Ionicons name='arrow-back' size={24} color="black" />
             </Pressable>
             <Text>{name}</Text>
-            <Pressable onPress={() => navigation.navigate('ChannelSettings')}>
+            <Pressable onPress={() => navigation.navigate('ChannelSettings', { chat_id: chat_id })}>
                 <Entypo name='dots-three-vertical' size={24} color="black" />
             </Pressable>
         </View>

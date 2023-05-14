@@ -28,10 +28,12 @@ export default function Message({ message, message_id, isUser, timestamp, handle
 
 const styles = StyleSheet.create({
     notUserContainer: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center'
     },
     isUserContainer: {
+        flex: 1,
         flexDirection: 'row-reverse',
         alignItems: 'center'
     },

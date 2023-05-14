@@ -39,7 +39,7 @@ export default function Channel({ route, navigation }) {
         setIsModalVisible(prev => !prev);
     }
 
-    const getChannelData = () => {
+    const getChannelData = (token) => {
         axios.get(getChannelDetails + chat_id, {
             headers: {
                 'X-Authorization': token
@@ -65,7 +65,7 @@ export default function Channel({ route, navigation }) {
             }).then(res => {
                 console.log(res.data);
                 setMessage('');
-                getChannelData();
+                getChannelData(token);
             }).catch(error => {
                 console.log(error);
             })
@@ -82,7 +82,7 @@ export default function Channel({ route, navigation }) {
         }).then(res => {
             console.log('logging update message success: ',res.data);
             setIsModalVisible(prev => !prev);
-            getChannelData();
+            getChannelData(token);
             /**
              * Write to new message to the message
              */
@@ -101,7 +101,7 @@ export default function Channel({ route, navigation }) {
             .then(res => {
                 console.log(res.data);
                 setIsModalVisible(prev => !prev);
-                getChannelData();
+                getChannelData(token);
             }).catch(error => {
                 console.log(error);
             })
@@ -113,7 +113,7 @@ export default function Channel({ route, navigation }) {
                 const res = await AsyncStorage.getItem(key);
                 console.log('Logging token: ', res);
                 setToken(res);
-                getChannelData();
+                getChannelData(res);
             }
             retrieveData('token');
             const retrieveId = async (key) => {
@@ -127,14 +127,14 @@ export default function Channel({ route, navigation }) {
 
     return (
         <View style={styles.container}>
-            <ChannelHeader navigation={navigation} name={name} />
+            <ChannelHeader navigation={navigation} name={name} chat_id={chat_id} />
             {
                 userId ?
                 <SafeAreaView style={{flex: 9}}>
                     <FlatList
                         data={messages}
                         inverted
-                        contentContainerStyle={{ flexDirection: 'column-reverse' }}
+                        contentContainerStyle={{ flexDirection: 'column' }}
                         renderItem={({item}) => <Message message={item?.message} message_id={item?.message_id} isUser={parseInt(item.author.user_id) === parseInt(userId) ? true : false} timestamp={item?.timestamp} handleModal={handleModal} />}
                         keyExtractor={item => item?.message_id}
                     />
