@@ -4,8 +4,10 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import CustomTextInput from '../components/text-input.component';
+import UserDetails from '../components/user-details.component';
 
 // NETWORK
+import UserSettingsHeader from '../components/user-settings-header.component';
 import { serverURL } from "../utils/enums.util";
 const logoutUrl = serverURL + '/logout'; // var serverURL => './utils/enums.util.js'
 const userDataUrl = serverURL + '/user'; // var serverURL => './utils/enums.util.js'
@@ -16,41 +18,40 @@ export default function UserSettingScreen ({ navigation }) {
     const [isEdit, setIsEdit] = useState(false);
     const [userId, setUserId] = useState(null);
     const [token, setToken] = useState(null);
+    const [first_name, setFirst_name] = useState('');
+    const [last_name, setLast_name] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [image, setImage] = useState(null);
 
-    const getData = async (key) => {
-        try {
-            const value = await AsyncStorage.getItem(key);
-            if (value !== null) {
-                // value previously stored
-                return value;
+    const getUserDetails = (token, user_id) => {
+        console.log('Logging the token before getting user details: ', token, user_id);
+        axios.get(userDataUrl + `/${user_id}`, {
+            headers: {
+                'X-Authorization': token,
             }
-        } catch (err) {
-            // error reading value
-        }
+        }).then(res => {
+            console.log(res.data)
+            const {
+                first_name,
+                last_name,
+                email,
+            } = res.data;
+            setFirst_name(first_name);
+            setLast_name(last_name);
+            setEmail(email);
+        }).catch(err => {
+            console.log(err);
+            console.log(err.response);
+            console.log(err.request);
+        });
     }
 
-    useEffect(() => {
-        const retrieveToken = async (key) => {
-            const res = await AsyncStorage.getItem(key);
-            console.log(res);
-            setToken(res);
-        }
-        const retrieveId = async (key) => {
-            const res = await AsyncStorage.getItem(key);
-            console.log(res);
-            setUserId(res);
-        }
-        retrieveToken('token');
-        retrieveId('id');
-        console.log('logging user id',userId);
-        console.log('logging token in user settings',token);
-        if (userId && token) {
-            console.log('Got here!');
-            axios.get(userDataUrl + `/${userId}`, {
-                'X-Authorisation': token,
-            }).then(response => console.log(response)).catch(err => console.log(err));
-        }
-    }, [isFocused]);
+    const uploadUserPhoto = () => {
+        axios.post(userDataUrl + `/${userId}` + '/photo', {
+
+        })
+    }
 
     const logout = () => {
         /**
@@ -72,56 +73,100 @@ export default function UserSettingScreen ({ navigation }) {
         })
     }
 
+    const handleSave = () => {
+        setIsEdit(prev => !prev);
+        if (isEdit) {
+            axios.patch(userDataUrl + `/${userId}`, {
+                first_name: first_name,
+                last_name: last_name,
+                email: email,
+                password: password,
+            }, {
+                headers: {
+                    'X-Authorization': token
+                }
+            }).then(res => {
+                console.log(res.data);
+            }).catch(error => {
+                console.log(error);
+            })
+        }
+    }
+
+    useEffect(() => {
+        const retrieveData = async () => {
+            const token = await AsyncStorage.getItem('token');
+            const user_id = await AsyncStorage.getItem('id');
+            setToken(token);
+            setUserId(user_id);
+            getUserDetails(token, user_id);
+        }
+        retrieveData();
+    }, [isFocused]);
+
     return (
         <View style={styles.container}>
+            <UserSettingsHeader />
             {/* Pressable User Image */}
-            <Pressable onPress={() => console.log('Upload an image!')}>
+            <Pressable onPress={setImage}>
                 <Image 
                     style={styles.userImage}
                     source={require('../assets/avataaars.png')}
                 />
             </Pressable>
             <View>
+                <View style={styles.buttonContainer}>
+                    <Pressable onPress={handleSave} style={styles.button}>
+                        <Text style={styles.text}>{ isEdit ? 'Save' : 'Edit' }</Text>
+                    </Pressable>
+                </View>
                 {
                     isEdit ?
                     <View>
                         <CustomTextInput 
                             label={'First name'}
+                            value={first_name}
+                            handleChange={setFirst_name}
                         />
                         <CustomTextInput 
                             label={'Last name'}
+                            value={last_name}
+                            handleChange={setLast_name}
                         />
                         <CustomTextInput 
                             label={'Email'}
+                            value={email}
+                            handleChange={setEmail}
                         />
                         <CustomTextInput 
                             label={'Password'}
+                            value={password}
+                            handleChange={setPassword}
                         />
                     </View>
                     :
                     <View>
-                        {/* {
-                            user.length > 0 ?
+                        {
+                            first_name.length > 0 && 
+                            last_name.length > 0 && 
+                            email.length > 0 ?
                             <View>
                                 <UserDetails 
                                     label={'First name'}
-                                    detail={user[0]}
+                                    detail={first_name}
                                 />
                                 <UserDetails 
                                     label={'Last name'}
-                                    detail={user[1]}
+                                    detail={last_name}
                                 />
                                 <UserDetails 
                                     label={'Email'}
-                                    detail={user[3]}
-                                />
-                                <UserDetails 
-                                    label={'Password'}
+                                    detail={email}
                                 />
                             </View>
                             :
                             null
-                        } */}
+                        }
                     </View>
                 }
             </View>
@@ -141,6 +186,20 @@ const styles = StyleSheet.create({
     userImage: {
         width: 150,
         height: 150,
+    },
+    text: {
+        color: '#fff',
+        textAlign: 'center'
+    },
+    buttonContainer: {
+        justifyContent: 'flex-end'
+    },
+    button: {
+        backgroundColor: '#4F46E5',
+        borderRadius: 5,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        width: 64,
     },
     'logout-button': {
         backgroundColor: '#FCA5A5',

@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, View, Text } from 'react-native'
+import { StyleSheet, Text, TextInput, View } from 'react-native'
 /**
  * TODO: Add TextInput ToolTip prop => tooltip ? showToolTip : null
  * docs => https://reactnative.dev/docs/textinput
@@ -18,6 +18,7 @@ export default function CustomTextInput({
     secureTextEntry = false, // Entering a password? I should be true!
     selectionColor = '#4F46E5', // Added quality
     textContentType = 'none',
+    value,
 }) {
     return (
         <View>
@@ -38,6 +39,7 @@ export default function CustomTextInput({
                 secureTextEntry={secureTextEntry}
                 selectionColor={selectionColor}
                 textContentType={textContentType}
+                value={value}
             />
         </View>
     )
@@ -53,7 +55,7 @@ const styles = StyleSheet.create({
         padding: 10,
         paddingHorizontal: 20,
         borderColor: '#4F46E5',
-        borderRadius: 80,
+        borderRadius: 12,
         width: '75%',
         color: '#ffffff',
     },
