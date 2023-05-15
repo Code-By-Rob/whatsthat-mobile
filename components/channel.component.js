@@ -56,7 +56,7 @@ export default function Chatfeed({
                 {/* Show last_message timestamp */}
                 {
                     last_message ? 
-                    <Text>{last_message?.timestamp ? formatTimestamp(last_message?.timestamp) : '-'}</Text>
+                    <Text style={styles.text}>{last_message?.timestamp ? formatTimestamp(last_message?.timestamp) : '-'}</Text>
                     :
                     <Text>Time</Text>
                 }
@@ -92,19 +92,26 @@ const styles = StyleSheet.create({
     },
     channelName: {
         fontSize: 18,
-        color: '#1f2937',
+        color: '#4F46E5',
         fontWeight: '600'
     },
     lastMessage: {
         fontSize: 12,
-        color: '#4b5563',
+        color: '#4F46E5',
+        opacity: .8,
         fontWeight: '400'
     },
     timestamp: {
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'center',
-        padding: 12
+        padding: 12,
         // backgroundColor: '#00000020'
+    },
+    text: {
+        fontSize: 12,
+        color: '#4F46E5',
+        opacity: .8,
+        fontWeight: '400'
     }
 })

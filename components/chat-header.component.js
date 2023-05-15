@@ -21,9 +21,16 @@ const styles = StyleSheet.create({
         height: 50,
         flexDirection: 'row',
         justifyContent: 'flex-end',
-        backgroundColor: '#00000060',
+        backgroundColor: '#000000',
         alignItems: 'center',
-        paddingHorizontal: 24
+        paddingHorizontal: 24,
+        shadowColor: '#fff',
+        shadowOpacity: 0.3,
+        shadowOffset: {
+            width: 0,
+            height: 20
+        },
+        shadowRadius: 40
     },
     button: {
         width: 32,

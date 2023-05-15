@@ -42,6 +42,7 @@ function Main() {
   return (
     <Tab.Navigator 
       screenOptions={({ route }) => ({
+        tabBarStyle: { backgroundColor: '#000', borderTopWidth: 0 },
         tabBarIcon: ({ focused, colour, size }) => {
           colour = '#4f46e5'
           let iconName;

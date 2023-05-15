@@ -1,9 +1,12 @@
 import { Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ContactsScreen ({}) {
     return (
-        <Text>
-            Contacts Screen
-        </Text>
+        <SafeAreaView>
+            <Text>
+                Contacts Screen
+            </Text>
+        </SafeAreaView>
     )
 }

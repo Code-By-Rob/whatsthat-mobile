@@ -14,11 +14,11 @@ export default function ChannelHeader({ navigation, name, chat_id }) {
     return (
         <View style={styles.header}>
             <Pressable onPress={() => navigation.goBack()}>
-                <Ionicons name='arrow-back' size={24} color="black" />
+                <Ionicons name='arrow-back' size={24} color="#4F46E5" />
             </Pressable>
-            <Text>{name}</Text>
+            <Text style={styles.text}>{name}</Text>
             <Pressable onPress={() => navigation.navigate('ChannelSettings', { chat_id: chat_id })}>
-                <Entypo name='dots-three-vertical' size={24} color="black" />
+                <Entypo name='dots-three-vertical' size={24} color="#4F46E5" />
             </Pressable>
         </View>
     )
@@ -32,12 +32,22 @@ const styles = StyleSheet.create({
         height: 50,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        backgroundColor: '#1F2937',
+        backgroundColor: '#000',
         alignItems: 'center',
-        paddingHorizontal: 24
+        paddingHorizontal: 24,
+        shadowColor: '#fff',
+        shadowOpacity: 0.3,
+        shadowOffset: {
+            width: 0,
+            height: 1
+        },
+        shadowRadius: 40
     },
     button: {
         width: 32,
         height: 32,
+    },
+    text: {
+        color: '#4F46E5'
     }
 })

@@ -1,12 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import axios from 'axios';
+import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import CustomTextInput from '../components/text-input.component';
 import UserDetails from '../components/user-details.component';
-
-// NETWORK
 import UserSettingsHeader from '../components/user-settings-header.component';
 import { serverURL } from "../utils/enums.util";
 const logoutUrl = serverURL + '/logout'; // var serverURL => './utils/enums.util.js'
@@ -23,6 +22,39 @@ export default function UserSettingScreen ({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [image, setImage] = useState(null);
+    const [imageUri, setImageUri] = useState(null);
+
+    const pickImage = async () => {
+        // No permissions request is necessary for launching the image library
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        })
+
+        console.log(result);
+        if (!result.canceled) {
+            setImageUri(result.assets[0].uri);
+            setImage(result.assets[0]);
+            try {
+                axios.post(userDataUrl + `/${userId}` + '/photo', image, {
+                    headers: {
+                        'Content-Type': 'image/jpeg',
+                        'X-Authorization': token
+                    }
+                }).then(res => {
+                    console.log('Logging response: ',res.data);
+                }).catch(error => {
+                    console.log(error);
+                })
+            } catch(error) {
+
+            }
+        } else {
+            alert('You did not select any image');
+        }
+    }
 
     const getUserDetails = (token, user_id) => {
         console.log('Logging the token before getting user details: ', token, user_id);
@@ -40,6 +72,7 @@ export default function UserSettingScreen ({ navigation }) {
             setFirst_name(first_name);
             setLast_name(last_name);
             setEmail(email);
+            getImage(user_id, token);
         }).catch(err => {
             console.log(err);
             console.log(err.response);
@@ -47,9 +80,16 @@ export default function UserSettingScreen ({ navigation }) {
         });
     }
 
-    const uploadUserPhoto = () => {
-        axios.post(userDataUrl + `/${userId}` + '/photo', {
-
+    const getImage = (user_id, token) => {
+        axios.get(userDataUrl + `/${user_id}` + '/photo', {
+            headers: {
+                'X-Authorization': token,
+            }
+        }).then(res => {
+            console.log(res.data);
+            setImageUri(res.data.uri);
+        }).catch(error => {
+            console.log(error);
         })
     }
 
@@ -108,18 +148,16 @@ export default function UserSettingScreen ({ navigation }) {
         <View style={styles.container}>
             <UserSettingsHeader />
             {/* Pressable User Image */}
-            <Pressable onPress={setImage}>
+            <Pressable onPress={pickImage}>
                 <Image 
                     style={styles.userImage}
-                    source={require('../assets/avataaars.png')}
+                    source={imageUri ? { uri: imageUri } : require('../assets/avataaars.png')}
                 />
             </Pressable>
             <View>
-                <View style={styles.buttonContainer}>
-                    <Pressable onPress={handleSave} style={styles.button}>
-                        <Text style={styles.text}>{ isEdit ? 'Save' : 'Edit' }</Text>
-                    </Pressable>
-                </View>
+                <Pressable onPress={handleSave} style={styles.button}>
+                    <Text style={styles.text}>{ isEdit ? 'Save' : 'Edit' }</Text>
+                </Pressable>
                 {
                     isEdit ?
                     <View>
@@ -186,13 +224,13 @@ const styles = StyleSheet.create({
     userImage: {
         width: 150,
         height: 150,
+        borderRadius: 80,
+        marginLeft: 'auto',
+        marginRight: 'auto'
     },
     text: {
         color: '#fff',
         textAlign: 'center'
-    },
-    buttonContainer: {
-        justifyContent: 'flex-end'
     },
     button: {
         backgroundColor: '#4F46E5',
@@ -200,16 +238,26 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 8,
         width: 64,
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        marginTop: 24
     },
     'logout-button': {
-        backgroundColor: '#FCA5A5',
+        // backgroundColor: '#FCA5A5',
         width: 128,
         paddingHorizontal: 12,
         paddingVertical: 6,
+        width: '75%',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        marginTop: 24,
+        borderRadius: 12,
+        borderColor: '#DC2626',
+        borderWidth: 2,
     },
     'logout-text': {
-        color: '#7F1D1D',
+        color: '#DC2626',
         fontSize: 18,
-        textAlign: 'center'
+        textAlign: 'center',
     }
 });

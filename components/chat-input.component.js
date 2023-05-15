@@ -18,10 +18,10 @@ export default function ChatInput({ message, setMessage, sendMessage }) {
                 onChangeText={setMessage}
                 value={message}
                 placeholder='message...'
-                placeholderTextColor={'#ffffff60'}
+                placeholderTextColor={'#4F46E5'}
             />
             <Pressable style={styles.sendButton} onPress={sendMessage}>
-                <AntDesign name='rightcircleo' size={24} color={'#fff'} />
+                <AntDesign name='rightcircleo' size={32} color={'#4F46E5'} />
             </Pressable>
         </View>
     )
@@ -34,10 +34,17 @@ const styles = StyleSheet.create({
         height: 48,
         width: windowWidth,
         flexDirection: 'row',
-        backgroundColor: '#1F2937',
+        backgroundColor: '#000',
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        shadowColor: '#fff',
+        shadowOpacity: 0.3,
+        shadowOffset: {
+            width: 0,
+            height: 20
+        },
+        shadowRadius: 40
     },
     input: {
         borderRadius: 8,
@@ -45,7 +52,9 @@ const styles = StyleSheet.create({
         height: 36,
         borderWidth: 1,
         padding: 10,
-        color: '#fff'
+        color: '#fff',
+        borderWidth: 2,
+        borderColor: '#4F46E5'
     },
     sendButton: {
         marginHorizontal: 14,
