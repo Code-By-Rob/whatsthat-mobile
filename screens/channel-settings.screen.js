@@ -17,13 +17,16 @@ import {
 import ChannelHeader from "../components/channel-header.component";
 import { serverURL } from '../utils/enums.util';
 const updateChannelUrl = serverURL + '/chat/'
+const contactsUrl = serverURL + '/contacts'
 
 export default function ChannelSettings({ route, navigation }) {
 
     const { chat_id } = route.params;
     const [token, setToken] = useState(null);
     const [channelName, setChannelName] = useState('');
+    const [flag, setFlag] = useState(true);
     const [members, setMembers] = useState([]);
+    const [contacts, setContacts] = useState([]);
 
     const getChannelData = (token) => {
         axios.get(updateChannelUrl + chat_id, {
@@ -36,6 +39,16 @@ export default function ChannelSettings({ route, navigation }) {
             setMembers(res.data.members);
         }).catch(error => {
             console.log(error);
+        })
+    }
+
+    const getContacts = () => {
+        axios.get(contactsUrl, {
+            headers: {
+                'X-Authorization': token,
+            }
+        }).then(res => {
+
         })
     }
 
@@ -82,7 +95,7 @@ export default function ChannelSettings({ route, navigation }) {
                 token !== null ?
                 <SafeAreaView>
                     <FlatList
-                        data={members}
+                        data={flag ? members : contacts}
                         renderItem={({item}) => <ChannelMember first_name={item?.first_name} last_name={item?.last_name} user_id={item?.user_id} token={token} chat_id={chat_id} />}
                         keyExtractor={item => item.user_id}
                     />
