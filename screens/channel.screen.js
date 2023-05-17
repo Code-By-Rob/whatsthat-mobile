@@ -1,4 +1,5 @@
 import {
+    AntDesign,
     Ionicons
 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -36,6 +37,8 @@ export default function Channel({ route, navigation }) {
     const [name, setName] = useState(null);
     const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState('');
+    const [messageLimit, setMessageLimit] = useState(10);
+    const [offset, setOffset] = useState(0);
     const [images, setImages] = useState([]);
     const [editMessage, setEditMessage] = useState('');
     const [message_id, setMessage_id] = useState(null);
@@ -49,7 +52,7 @@ export default function Channel({ route, navigation }) {
     }
 
     const getChannelData = (token) => {
-        axios.get(getChannelDetails + chat_id, {
+        axios.get(getChannelDetails + chat_id + `?limit=${messageLimit}&offset=${offset}`, {
             headers: {
                 'X-Authorization': token
             },
@@ -61,6 +64,7 @@ export default function Channel({ route, navigation }) {
                 console.log('loggin individual member: ',item);
                 getImage(item?.user_id, token);
             })
+            setOffset(prev => prev + messageLimit);
             setMessages(res.data.messages);
             setName(res.data.name)
         }).catch(error => {
@@ -194,6 +198,15 @@ export default function Channel({ route, navigation }) {
                                 data={messages}
                                 inverted
                                 contentContainerStyle={{ flexDirection: 'column' }}
+                                ListEmptyComponent={
+                                    <View style={styles.noMessages}>
+                                        <AntDesign name='message1' size={64} color={'#fff'} />
+                                        <Text style={{color: '#fff', fontSize: 18, marginTop: 6}}>No Messages</Text>
+                                        <Pressable onPress={() => navigation.navigate('ChannelSettings', { chat_id: chat_id })} style={{backgroundColor: '#4F46E5', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, marginTop: 24}}>
+                                            <Text style={{fontSize: 18, color: '#fff'}}>Add a member!</Text>
+                                        </Pressable>
+                                    </View>
+                                }
                                 renderItem={({item}) => <Message message={item?.message} message_id={item?.message_id} image={returnUsersImage(item?.user_id)} isUser={parseInt(item.author.user_id) === parseInt(userId) ? true : false} timestamp={item?.timestamp} handleModal={handleModal} />}
                                 keyExtractor={item => item?.message_id}
                             />
@@ -266,4 +279,10 @@ const styles = StyleSheet.create({
         padding: 10,
         color: '#fff'
     },
+    noMessages: {
+        backgroundColor: '#000',
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center'
+    }
 })

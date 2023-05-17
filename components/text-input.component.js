@@ -10,7 +10,6 @@ export default function CustomTextInput({
     placeholder, // placeholder text :/
     autoFocus = false, // Focus the user's attention e.g., email focus!
     autoCorrect = false, // ducking auto correct
-    autoComplete, // autofill my damn email & password
     autoCapitalize = false, // emails shouldn't have capital letters...
     handleChange, // onChangeText function
     keyboardType = 'default',
@@ -31,7 +30,6 @@ export default function CustomTextInput({
                 placeholderTextColor={'#475549'}
                 autoFocus={autoFocus}
                 autoCorrect={autoCorrect}
-                autoComplete={autoComplete}
                 autoCapitalize={autoCapitalize}
                 onChangeText={handleChange}
                 keyboardType={keyboardType}
