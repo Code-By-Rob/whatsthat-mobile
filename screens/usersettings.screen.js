@@ -3,7 +3,7 @@ import { useIsFocused } from '@react-navigation/native';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import CustomTextInput from '../components/text-input.component';
 import UserDetails from '../components/user-details.component';
 import UserSettingsHeader from '../components/user-settings-header.component';
@@ -145,81 +145,86 @@ export default function UserSettingScreen ({ navigation }) {
     }, [isFocused]);
 
     return (
-        <View style={styles.parent}>
-            <UserSettingsHeader />
-            <View>
-                {/* Pressable User Image */}
-                <Pressable onPress={pickImage}>
-                    <Image 
-                        style={styles.userImage}
-                        source={imageUri ? { uri: imageUri } : require('../assets/avataaars.png')}
-                    />
+        <SafeAreaView style={styles.parent}>
+            <View style={styles.container}>
+                <UserSettingsHeader />
+                <View>
+                    {/* Pressable User Image */}
+                    <Pressable onPress={pickImage}>
+                        <Image 
+                            style={styles.userImage}
+                            source={imageUri ? { uri: imageUri } : require('../assets/avataaars.png')}
+                        />
+                    </Pressable>
+                    <Pressable onPress={handleSave} style={styles.button}>
+                        <Text style={styles.text}>{ isEdit ? 'Save' : 'Edit' }</Text>
+                    </Pressable>
+                    {
+                        isEdit ?
+                        <View>
+                            <CustomTextInput 
+                                label={'First name'}
+                                value={first_name}
+                                handleChange={setFirst_name}
+                            />
+                            <CustomTextInput 
+                                label={'Last name'}
+                                value={last_name}
+                                handleChange={setLast_name}
+                            />
+                            <CustomTextInput 
+                                label={'Email'}
+                                value={email}
+                                handleChange={setEmail}
+                            />
+                            <CustomTextInput 
+                                label={'Password'}
+                                value={password}
+                                handleChange={setPassword}
+                            />
+                        </View>
+                        :
+                        <View>
+                            {
+                                first_name.length > 0 && 
+                                last_name.length > 0 && 
+                                email.length > 0 ?
+                                <View>
+                                    <UserDetails 
+                                        label={'First name'}
+                                        detail={first_name}
+                                    />
+                                    <UserDetails 
+                                        label={'Last name'}
+                                        detail={last_name}
+                                    />
+                                    <UserDetails 
+                                        label={'Email'}
+                                        detail={email}
+                                    />
+                                </View>
+                                :
+                                null
+                            }
+                        </View>
+                    }
+                </View>
+                <Pressable style={styles['logout-button']} onPress={() => logout()}>
+                    <Text style={styles['logout-text']}>Logout</Text>
                 </Pressable>
-                <Pressable onPress={handleSave} style={styles.button}>
-                    <Text style={styles.text}>{ isEdit ? 'Save' : 'Edit' }</Text>
-                </Pressable>
-                {
-                    isEdit ?
-                    <View>
-                        <CustomTextInput 
-                            label={'First name'}
-                            value={first_name}
-                            handleChange={setFirst_name}
-                        />
-                        <CustomTextInput 
-                            label={'Last name'}
-                            value={last_name}
-                            handleChange={setLast_name}
-                        />
-                        <CustomTextInput 
-                            label={'Email'}
-                            value={email}
-                            handleChange={setEmail}
-                        />
-                        <CustomTextInput 
-                            label={'Password'}
-                            value={password}
-                            handleChange={setPassword}
-                        />
-                    </View>
-                    :
-                    <View>
-                        {
-                            first_name.length > 0 && 
-                            last_name.length > 0 && 
-                            email.length > 0 ?
-                            <View>
-                                <UserDetails 
-                                    label={'First name'}
-                                    detail={first_name}
-                                />
-                                <UserDetails 
-                                    label={'Last name'}
-                                    detail={last_name}
-                                />
-                                <UserDetails 
-                                    label={'Email'}
-                                    detail={email}
-                                />
-                            </View>
-                            :
-                            null
-                        }
-                    </View>
-                }
             </View>
-            <Pressable style={styles['logout-button']} onPress={() => logout()}>
-                <Text style={styles['logout-text']}>Logout</Text>
-            </Pressable>
-        </View>
+        </SafeAreaView>
     )
 }
 
 const styles = StyleSheet.create({
     parent: {
-        backgroundColor: '#000000',
         height: '100%',
         flex: 12
+    },
+    container: {
+        backgroundColor: '#000',
+        flex: 1,
     },
     userImage: {
         width: 150,
