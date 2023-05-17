@@ -145,16 +145,16 @@ export default function UserSettingScreen ({ navigation }) {
     }, [isFocused]);
 
     return (
-        <View style={styles.container}>
+        <View style={styles.parent}>
             <UserSettingsHeader />
-            {/* Pressable User Image */}
-            <Pressable onPress={pickImage}>
-                <Image 
-                    style={styles.userImage}
-                    source={imageUri ? { uri: imageUri } : require('../assets/avataaars.png')}
-                />
-            </Pressable>
             <View>
+                {/* Pressable User Image */}
+                <Pressable onPress={pickImage}>
+                    <Image 
+                        style={styles.userImage}
+                        source={imageUri ? { uri: imageUri } : require('../assets/avataaars.png')}
+                    />
+                </Pressable>
                 <Pressable onPress={handleSave} style={styles.button}>
                     <Text style={styles.text}>{ isEdit ? 'Save' : 'Edit' }</Text>
                 </Pressable>
@@ -216,7 +216,7 @@ export default function UserSettingScreen ({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-    container: {
+    parent: {
         backgroundColor: '#000000',
         height: '100%',
         flex: 12

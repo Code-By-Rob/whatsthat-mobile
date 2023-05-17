@@ -62,20 +62,6 @@ export default function ChatsScreen ({ navigation }) {
         })
     }
 
-    useEffect(() => {
-        const retrieveData = async (key) => {
-            const res = await AsyncStorage.getItem(key);
-            console.log(res);
-            setToken(res);
-        }
-        retrieveData('token');
-        if (token) {
-            getChannels();
-        } else {
-            console.log('Token doesn\'t exist.',token)
-        }
-    }, [token, isFocused]);
-
     const createChannel = () => {
         if (text.length > 0) {
             axios.post(createChat, {
@@ -100,6 +86,20 @@ export default function ChatsScreen ({ navigation }) {
             console.log('text is empty!');
         }
     }
+
+    useEffect(() => {
+        const retrieveData = async (key) => {
+            const res = await AsyncStorage.getItem(key);
+            console.log(res);
+            setToken(res);
+        }
+        retrieveData('token');
+        if (token) {
+            getChannels();
+        } else {
+            console.log('Token doesn\'t exist.',token)
+        }
+    }, [token, isFocused]);
 
     return (
         <SafeAreaView style={styles.parent}>

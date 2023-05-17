@@ -7,7 +7,11 @@ import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Button,
+    Dimensions,
     FlatList,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
     Pressable,
     SafeAreaView,
     StyleSheet,
@@ -26,6 +30,7 @@ const userDataUrl = serverURL + '/user/';
 export default function Channel({ route, navigation }) {
 
     const { chat_id } = route.params;
+    const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [token, setToken] = useState(null);
     const [userId, setUserId] = useState(null);
     const [name, setName] = useState(null);
@@ -152,6 +157,24 @@ export default function Channel({ route, navigation }) {
         }
     }, [token]);
 
+    /**
+     * Handle Keyboard open & close event
+     */
+    useEffect(() => {
+        const windowWidth = Dimensions.get('window').width;
+        const showSubscription = Keyboard.addListener('keyboardDidShow', (event) => {
+        setKeyboardOffset(windowWidth - event.endCoordinates.height);
+        });
+        const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+        setKeyboardOffset(0);
+        });
+
+        return () => {
+        showSubscription.remove();
+        hideSubscription.remove();
+        };
+    }, []);
+
     return (
         <SafeAreaView style={styles.parent}>
             {
@@ -160,7 +183,9 @@ export default function Channel({ route, navigation }) {
                     <ActivityIndicator size={'large'} color={'#fff'} />
                 </View>
                 :
-                <View style={styles.container}>
+                <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.container}>
                     <ChannelHeader navigation={navigation} name={name} chat_id={chat_id} />
                     {
                         userId ?
@@ -201,7 +226,7 @@ export default function Channel({ route, navigation }) {
                             </View>
                         </View>
                     </Modal>
-                </View>
+                </KeyboardAvoidingView>
             }
         </SafeAreaView>
     )

@@ -93,7 +93,7 @@ export default function ChannelSettings({ route, navigation }) {
     }, [token]);
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <ChannelHeader navigation={navigation} />
             <Text style={ styles.title }>Channel Settings</Text>
             <TextInput
@@ -117,7 +117,7 @@ export default function ChannelSettings({ route, navigation }) {
                 :
                 null
             }
-        </View>
+        </SafeAreaView>
     )
 }
 
