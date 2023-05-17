@@ -1,12 +1,18 @@
 import {
+    AntDesign,
     Ionicons
 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Button,
+    Dimensions,
     FlatList,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
     Pressable,
     SafeAreaView,
     StyleSheet,
@@ -20,18 +26,24 @@ import ChatInput from '../components/chat-input.component';
 import Message from '../components/message.component';
 import { serverURL } from '../utils/enums.util';
 const getChannelDetails = serverURL + '/chat/';
+const userDataUrl = serverURL + '/user/';
 
 export default function Channel({ route, navigation }) {
 
     const { chat_id } = route.params;
+    const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [token, setToken] = useState(null);
     const [userId, setUserId] = useState(null);
     const [name, setName] = useState(null);
     const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState('');
+    const [messageLimit, setMessageLimit] = useState(10);
+    const [offset, setOffset] = useState(0);
+    const [images, setImages] = useState([]);
     const [editMessage, setEditMessage] = useState('');
     const [message_id, setMessage_id] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const handleModal = (message, message_id) => {
         setEditMessage(message);
@@ -40,12 +52,19 @@ export default function Channel({ route, navigation }) {
     }
 
     const getChannelData = (token) => {
-        axios.get(getChannelDetails + chat_id, {
+        axios.get(getChannelDetails + chat_id + `?limit=${messageLimit}&offset=${offset}`, {
             headers: {
                 'X-Authorization': token
             },
         }).then(res => {
-            console.log('Logging channel data: ',res.data);
+            const {
+                members
+            } = res.data;
+            members.forEach((item) => {
+                console.log('loggin individual member: ',item);
+                getImage(item?.user_id, token);
+            })
+            setOffset(prev => prev + messageLimit);
             setMessages(res.data.messages);
             setName(res.data.name)
         }).catch(error => {
@@ -54,7 +73,6 @@ export default function Channel({ route, navigation }) {
     }
 
     const sendMessage = () => {
-        console.log(token);
         if (message.length > 0) {
             axios.post(getChannelDetails + chat_id + '/message', {
                 message: message,
@@ -63,7 +81,6 @@ export default function Channel({ route, navigation }) {
                     'X-Authorization': token,
                 }
             }).then(res => {
-                console.log(res.data);
                 setMessage('');
                 getChannelData(token);
             }).catch(error => {
@@ -107,6 +124,25 @@ export default function Channel({ route, navigation }) {
             })
     }
 
+    const getImage = (user_id, token) => {
+        axios.get(userDataUrl + user_id + '/photo', {
+            headers: {
+                'X-Authorization': token,
+            }
+        }).then(res => {
+            console.log('logging image data: ',res.data);
+            setImages(prev => [...prev, {user_id: user_id, image: res.data.uri}]);
+            setLoading(false);
+        }).catch(error => {
+            console.log(error);
+        })
+    }
+
+    const returnUsersImage = (user_id) => {
+        const filter = images.filter(item => item.user_id === user_id ? user_id : 4);
+        return filter[0]?.image;
+    }
+
     useEffect(() => {
         if (!token) {
             const retrieveData = async (key) => {
@@ -125,55 +161,103 @@ export default function Channel({ route, navigation }) {
         }
     }, [token]);
 
+    /**
+     * Handle Keyboard open & close event
+     */
+    useEffect(() => {
+        const windowWidth = Dimensions.get('window').width;
+        const showSubscription = Keyboard.addListener('keyboardDidShow', (event) => {
+        setKeyboardOffset(windowWidth - event.endCoordinates.height);
+        });
+        const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+        setKeyboardOffset(0);
+        });
+
+        return () => {
+        showSubscription.remove();
+        hideSubscription.remove();
+        };
+    }, []);
+
     return (
-        <View style={styles.container}>
-            <ChannelHeader navigation={navigation} name={name} chat_id={chat_id} />
+        <SafeAreaView style={styles.parent}>
             {
-                userId ?
-                <SafeAreaView style={{flex: 9}}>
-                    <FlatList
-                        data={messages}
-                        inverted
-                        contentContainerStyle={{ flexDirection: 'column' }}
-                        renderItem={({item}) => <Message message={item?.message} message_id={item?.message_id} isUser={parseInt(item.author.user_id) === parseInt(userId) ? true : false} timestamp={item?.timestamp} handleModal={handleModal} />}
-                        keyExtractor={item => item?.message_id}
-                    />
-                </SafeAreaView>
-                :
-                null
-            }
-            {/* Chat input for messages */}
-            <ChatInput chat_id={chat_id} message={message} setMessage={setMessage} sendMessage={sendMessage} />
-            {/* Modal for handling update and delete */}
-            <Modal isVisible={isModalVisible}>
-                <View style={styles.modal}>
-                    <Pressable onPress={() => setIsModalVisible(prev => !prev)}>
-                        <Ionicons name='exit-outline' style={{ textAlign: 'right' }} size={24} color={'#fff'} />
-                    </Pressable>
-                    <Text style={styles.text}>Edit a message</Text>
-                    <TextInput
-                        onChangeText={setEditMessage}
-                        value={editMessage}
-                        placeholder='Channel name'
-                        placeholderTextColor={'#ffffff60'}
-                        style={styles.input}
-                        autoFocus={true}
-                    />
-                    <View>
-                        {/* Button above hides modal */}
-                        <Button title='Delete' onPress={deleteMessage} />
-                        {/* Button Below creates a channel */}
-                        <Button title='Update' onPress={updateMessage} />
-                    </View>
+                loading ?
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size={'large'} color={'#fff'} />
                 </View>
-            </Modal>
-        </View>
+                :
+                <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.container}>
+                    <ChannelHeader navigation={navigation} name={name} chat_id={chat_id} />
+                    {
+                        userId ?
+                        <SafeAreaView style={{flex: 9}}>
+                            <FlatList
+                                data={messages}
+                                inverted
+                                contentContainerStyle={{ flexDirection: 'column' }}
+                                ListEmptyComponent={
+                                    <View style={styles.noMessages}>
+                                        <AntDesign name='message1' size={64} color={'#fff'} />
+                                        <Text style={{color: '#fff', fontSize: 18, marginTop: 6}}>No Messages</Text>
+                                        <Pressable onPress={() => navigation.navigate('ChannelSettings', { chat_id: chat_id })} style={{backgroundColor: '#4F46E5', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, marginTop: 24}}>
+                                            <Text style={{fontSize: 18, color: '#fff'}}>Add a member!</Text>
+                                        </Pressable>
+                                    </View>
+                                }
+                                renderItem={({item}) => <Message message={item?.message} message_id={item?.message_id} image={returnUsersImage(item?.user_id)} isUser={parseInt(item.author.user_id) === parseInt(userId) ? true : false} timestamp={item?.timestamp} handleModal={handleModal} />}
+                                keyExtractor={item => item?.message_id}
+                            />
+                        </SafeAreaView>
+                        :
+                        null
+                    }
+                    {/* Chat input for messages */}
+                    <ChatInput chat_id={chat_id} message={message} setMessage={setMessage} sendMessage={sendMessage} />
+                    {/* Modal for handling update and delete */}
+                    <Modal isVisible={isModalVisible}>
+                        <View style={styles.modal}>
+                            <Pressable onPress={() => setIsModalVisible(prev => !prev)}>
+                                <Ionicons name='exit-outline' style={{ textAlign: 'right' }} size={24} color={'#fff'} />
+                            </Pressable>
+                            <Text style={styles.text}>Edit a message</Text>
+                            <TextInput
+                                onChangeText={setEditMessage}
+                                value={editMessage}
+                                placeholder='Channel name'
+                                placeholderTextColor={'#ffffff60'}
+                                style={styles.input}
+                                autoFocus={true}
+                            />
+                            <View>
+                                {/* Button above hides modal */}
+                                <Button title='Delete' onPress={deleteMessage} />
+                                {/* Button Below creates a channel */}
+                                <Button title='Update' onPress={updateMessage} />
+                            </View>
+                        </View>
+                    </Modal>
+                </KeyboardAvoidingView>
+            }
+        </SafeAreaView>
     )
 }
 
 const styles = StyleSheet.create({
+    parent: {
+        flex: 1,
+        // backgroundColor: '#000000',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#000000',
+    },
     container: {
-        marginTop: 60,
+        // marginTop: 60,
         backgroundColor: '#000000',
         flex: 1,
     },
@@ -195,4 +279,10 @@ const styles = StyleSheet.create({
         padding: 10,
         color: '#fff'
     },
+    noMessages: {
+        backgroundColor: '#000',
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center'
+    }
 })

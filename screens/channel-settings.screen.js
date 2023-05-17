@@ -17,6 +17,7 @@ import {
 import ChannelHeader from "../components/channel-header.component";
 import { serverURL } from '../utils/enums.util';
 const updateChannelUrl = serverURL + '/chat/'
+const userDataUrl = serverURL + '/user/';
 const contactsUrl = serverURL + '/contacts'
 
 export default function ChannelSettings({ route, navigation }) {
@@ -26,7 +27,6 @@ export default function ChannelSettings({ route, navigation }) {
     const [channelName, setChannelName] = useState('');
     const [flag, setFlag] = useState(true);
     const [members, setMembers] = useState([]);
-    const [contacts, setContacts] = useState([]);
 
     const getChannelData = (token) => {
         axios.get(updateChannelUrl + chat_id, {
@@ -35,20 +35,17 @@ export default function ChannelSettings({ route, navigation }) {
             },
         }).then(res => {
             console.log('Logging channel data: ',res.data);
+            const {
+                members
+            } = res.data;
+            members.forEach((item, index) => {
+                console.log(members);
+                getImage(item?.user_id, token);
+            })
             setChannelName(res.data.name)
             setMembers(res.data.members);
         }).catch(error => {
             console.log(error);
-        })
-    }
-
-    const getContacts = () => {
-        axios.get(contactsUrl, {
-            headers: {
-                'X-Authorization': token,
-            }
-        }).then(res => {
-
         })
     }
 
@@ -79,7 +76,7 @@ export default function ChannelSettings({ route, navigation }) {
     }, [token]);
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <ChannelHeader navigation={navigation} />
             <Text style={ styles.title }>Channel Settings</Text>
             <TextInput
@@ -95,7 +92,7 @@ export default function ChannelSettings({ route, navigation }) {
                 token !== null ?
                 <SafeAreaView>
                     <FlatList
-                        data={flag ? members : contacts}
+                        data={members}
                         renderItem={({item}) => <ChannelMember first_name={item?.first_name} last_name={item?.last_name} user_id={item?.user_id} token={token} chat_id={chat_id} />}
                         keyExtractor={item => item.user_id}
                     />
@@ -103,11 +100,11 @@ export default function ChannelSettings({ route, navigation }) {
                 :
                 null
             }
-        </View>
+        </SafeAreaView>
     )
 }
 
-const ChannelMember = ({ first_name, last_name, user_id, token, chat_id }) => {
+const ChannelMember = ({ first_name, last_name, user_id, token, chat_id, image }) => {
 
     const removeUser = () => {
         axios.delete(updateChannelUrl + chat_id + '/user/' + user_id, {
@@ -124,7 +121,7 @@ const ChannelMember = ({ first_name, last_name, user_id, token, chat_id }) => {
     return (
         <View style={styles.memberContainer}>
             {/* User's Image */}
-            <Image style={styles.userImage} source={require('../assets/avataaars.png')} />
+            <Image style={styles.userImage} source={image ? { uri: image } : require('../assets/avataaars.png')} />
             {/* User's name */}
             <Text style={styles.text}>{ first_name + ' ' + last_name }</Text>
             <Pressable onPress={removeUser} style={styles.redButton}>
@@ -179,6 +176,7 @@ const styles = StyleSheet.create({
     },
     userImage: {
         width: 48,
-        height: 48
+        height: 48,
+        borderRadius: 80,
     }
 })

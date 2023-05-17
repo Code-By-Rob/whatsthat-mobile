@@ -62,20 +62,6 @@ export default function ChatsScreen ({ navigation }) {
         })
     }
 
-    useEffect(() => {
-        const retrieveData = async (key) => {
-            const res = await AsyncStorage.getItem(key);
-            console.log(res);
-            setToken(res);
-        }
-        retrieveData('token');
-        if (token) {
-            getChannels();
-        } else {
-            console.log('Token doesn\'t exist.',token)
-        }
-    }, [token, isFocused]);
-
     const createChannel = () => {
         if (text.length > 0) {
             axios.post(createChat, {
@@ -101,47 +87,66 @@ export default function ChatsScreen ({ navigation }) {
         }
     }
 
+    useEffect(() => {
+        const retrieveData = async (key) => {
+            const res = await AsyncStorage.getItem(key);
+            console.log(res);
+            setToken(res);
+        }
+        retrieveData('token');
+        if (token) {
+            getChannels();
+        } else {
+            console.log('Token doesn\'t exist.',token)
+        }
+    }, [token, isFocused]);
+
     return (
-        <View style={styles.container}>
-            <ChatHeader showModal={handleModal} />
-            <SafeAreaView style={styles.otherContainer}>
-                <FlatList
-                    data={chats.length > 0 ? chats : chatData}
-                    renderItem={({item}) => (
-                        <Pressable onPress={() => navigation.navigate('Channel', { chat_id: item.chat_id })}>
-                            <Chatfeed name={item.name} chat_id={item.chat_id} last_message={item.last_message} />
-                        </Pressable>
-                    )}
-                    keyExtractor={item => item.chat_id}
-                />
-            </SafeAreaView>
-            <Modal isVisible={isModalVisible}>
-                <View style={styles.modal}>
-                    <Text style={styles.text}>Create a channel</Text>
-                    <TextInput
-                        onChangeText={onChangeText}
-                        value={text}
-                        placeholder='Channel name'
-                        placeholderTextColor={'#ffffff60'}
-                        style={styles.channelNameInput}
-                        autoFocus={true}
+        <SafeAreaView style={styles.parent}>
+            <View style={styles.container}>
+                <ChatHeader showModal={handleModal} />
+                <SafeAreaView style={styles.otherContainer}>
+                    <FlatList
+                        data={chats.length > 0 ? chats : chatData}
+                        renderItem={({item}) => (
+                            <Pressable onPress={() => navigation.navigate('Channel', { chat_id: item.chat_id })}>
+                                <Chatfeed name={item.name} chat_id={item.chat_id} last_message={item.last_message} />
+                            </Pressable>
+                        )}
+                        keyExtractor={item => item.chat_id}
                     />
-                    <View>
-                        {/* Button above hides modal */}
-                        <Button title='Cancel' onPress={handleModal} />
-                        {/* Button Below creates a channel */}
-                        <Button title='Create' onPress={createChannel} />
+                </SafeAreaView>
+                <Modal isVisible={isModalVisible}>
+                    <View style={styles.modal}>
+                        <Text style={styles.text}>Create a channel</Text>
+                        <TextInput
+                            onChangeText={onChangeText}
+                            value={text}
+                            placeholder='Channel name'
+                            placeholderTextColor={'#ffffff60'}
+                            style={styles.channelNameInput}
+                            autoFocus={true}
+                        />
+                        <View>
+                            {/* Button above hides modal */}
+                            <Button title='Cancel' onPress={handleModal} />
+                            {/* Button Below creates a channel */}
+                            <Button title='Create' onPress={createChannel} />
+                        </View>
                     </View>
-                </View>
-            </Modal>
-        </View>
+                </Modal>
+            </View>
+        </SafeAreaView>
     )
 }
 
 const styles = StyleSheet.create({
+    parent: {
+        flex: 1,
+    },
     container: {
-        marginTop: 60,
-        backgroundColor: '#00000020',
+        // marginTop: 60,
+        backgroundColor: '#000',
         flex: 1,
     },
     otherContainer: {

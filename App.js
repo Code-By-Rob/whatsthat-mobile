@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
+import Toast, { ErrorToast, SuccessToast } from 'react-native-toast-message';
 import ChannelSettings from './screens/channel-settings.screen';
 import Channel from './screens/channel.screen';
 import ChatsScreen from './screens/chats.screen';
@@ -10,6 +11,38 @@ import ContactsScreen from './screens/contacts.screen';
 import CreateUser from './screens/create-user.screen';
 import Login from './screens/login.screen';
 import UserSettingScreen from './screens/usersettings.screen';
+
+const toastConfig = {
+  success: (props) => (
+    <SuccessToast
+      {...props}
+      style={{
+        backgroundColor: '#000',
+        borderLeftColor: '#22C55E',
+        top: 32,
+        shadowColor: '#fff',
+        shadowOpacity: 0.3,
+        shadowOffset: {
+            width: 0,
+            height: 1
+        },
+        shadowRadius: 40
+      }}
+      text1Style={{
+        color: '#fff'
+      }}
+    />
+  ),
+  error: (props) => (
+    <ErrorToast
+      {...props}
+      style={{backgroundColor: '#000'}}
+      text1Style={{
+        color: '#fff'
+      }}
+    />
+  )
+}
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -19,7 +52,7 @@ function ChatStackScreen() {
   return (
     <ChatStack.Navigator>
         <Stack.Screen 
-          name='Chats'
+          name='Channels'
           component={ChatsScreen}
           options={{ headerShown: false }}
         />
@@ -42,6 +75,7 @@ function Main() {
   return (
     <Tab.Navigator 
       screenOptions={({ route }) => ({
+        tabBarStyle: { backgroundColor: '#000', borderTopWidth: 0 },
         tabBarIcon: ({ focused, colour, size }) => {
           colour = '#4f46e5'
           let iconName;
@@ -93,6 +127,7 @@ export default function App() {
           />
         </Stack.Group>
       </Stack.Navigator>
+      <Toast config={toastConfig} />
     </NavigationContainer>
   );
 }

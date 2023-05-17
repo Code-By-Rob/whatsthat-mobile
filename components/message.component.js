@@ -1,9 +1,8 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-
 const avatarImageSize = 36;
 const verticalMessageMargin = 4;
 
-export default function Message({ message, message_id, isUser, timestamp, handleModal }) {
+export default function Message({ message, message_id, image, isUser, timestamp, handleModal }) {
 
     const formatTimestamp = (timestamp) => {
         const date = new Date(timestamp * 1000);
@@ -15,7 +14,7 @@ export default function Message({ message, message_id, isUser, timestamp, handle
 
     return (
         <View style={ isUser ? styles.isUserContainer : styles.notUserContainer}>
-            <Image style={styles.messageImage} source={require('../assets/avataaars.png')} />
+            <Image style={styles.messageImage} source={image ? { uri: image } : require('../assets/avataaars.png')} />
             <Pressable onPress={() => handleModal(message, message_id)}>
                 <View style={isUser ? styles.isUserMessage : styles.notUserMessage}>
                     <Text style={styles.message}>{message}</Text>
@@ -30,12 +29,12 @@ const styles = StyleSheet.create({
     notUserContainer: {
         flex: 1,
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     isUserContainer: {
         flex: 1,
         flexDirection: 'row-reverse',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     notUserMessage: {
         backgroundColor: '#4F46E5',
@@ -47,7 +46,7 @@ const styles = StyleSheet.create({
         marginVertical: verticalMessageMargin,
     },
     isUserMessage: {
-        backgroundColor: '#1F2937',
+        backgroundColor: '#1F293770',
         borderRadius: 8,
         paddingVertical: 14,
         paddingHorizontal: 16,
@@ -72,6 +71,7 @@ const styles = StyleSheet.create({
     messageImage: {
         width: avatarImageSize,
         height: avatarImageSize,
-        marginHorizontal: 8
+        marginHorizontal: 8,
+        borderRadius: 80
     }
 })
