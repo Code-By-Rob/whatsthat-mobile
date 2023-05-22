@@ -10,7 +10,7 @@ export default function CustomTextInput({
     placeholder, // placeholder text :/
     autoFocus = false, // Focus the user's attention e.g., email focus!
     autoCorrect = false, // ducking auto correct
-    autoCapitalize = false, // emails shouldn't have capital letters...
+    autoCapitalize = 'none', // emails shouldn't have capital letters...
     handleChange, // onChangeText function
     keyboardType = 'default',
     inputMode = 'text', // Which keyboard to open?

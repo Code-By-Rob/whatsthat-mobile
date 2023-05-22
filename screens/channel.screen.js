@@ -8,9 +8,7 @@ import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Button,
-    Dimensions,
     FlatList,
-    Keyboard,
     KeyboardAvoidingView,
     Platform,
     Pressable,
@@ -21,17 +19,18 @@ import {
     View
 } from 'react-native';
 import Modal from 'react-native-modal';
+import Toast from 'react-native-toast-message';
 import ChannelHeader from '../components/channel-header.component';
 import ChatInput from '../components/chat-input.component';
 import Message from '../components/message.component';
 import { serverURL } from '../utils/enums.util';
+import httpErrors from '../utils/httpErrors.util';
 const getChannelDetails = serverURL + '/chat/';
 const userDataUrl = serverURL + '/user/';
 
 export default function Channel({ route, navigation }) {
 
     const { chat_id } = route.params;
-    const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [token, setToken] = useState(null);
     const [userId, setUserId] = useState(null);
     const [name, setName] = useState(null);
@@ -54,12 +53,13 @@ export default function Channel({ route, navigation }) {
     const getChannelData = (token) => {
         axios.get(getChannelDetails + chat_id + `?limit=${messageLimit}&offset=${offset}`, {
             headers: {
-                'X-Authorization': token
+                'X-Authorization': token,
             },
         }).then(res => {
             const {
                 members
             } = res.data;
+            console.log(members);
             members.forEach((item) => {
                 console.log('loggin individual member: ',item);
                 getImage(item?.user_id, token);
@@ -69,6 +69,12 @@ export default function Channel({ route, navigation }) {
             setName(res.data.name)
         }).catch(error => {
             console.log(error);
+            if (error.response) {
+                const {
+                    status
+                } = error.response;
+                httpErrors(status);
+            }
         })
     }
 
@@ -85,6 +91,10 @@ export default function Channel({ route, navigation }) {
                 getChannelData(token);
             }).catch(error => {
                 console.log(error);
+                const {
+                    status
+                } = error.response;
+                httpErrors(status);
             })
         }
     }
@@ -100,12 +110,21 @@ export default function Channel({ route, navigation }) {
             console.log('logging update message success: ',res.data);
             setIsModalVisible(prev => !prev);
             getChannelData(token);
+            Toast.show({
+                type: 'success',
+                text1: 'Updated Message!',
+                text2: 'The message has been updated.'
+            })
             /**
              * Write to new message to the message
              */
         }).catch(error => {
             console.log('logging update message error: ',error);
             console.log('logging update message error: ',error.message);
+            const {
+                status
+            } = error.response;
+            httpErrors(status);
         })
     }
 
@@ -119,27 +138,40 @@ export default function Channel({ route, navigation }) {
                 console.log(res.data);
                 setIsModalVisible(prev => !prev);
                 getChannelData(token);
+                Toast.show({
+                    type: 'success',
+                    text1: 'Deleted Message',
+                    text2: 'Your message has been deleted!'
+                })
             }).catch(error => {
                 console.log(error);
+                const {
+                    status
+                } = error.response;
+                httpErrors(status);
             })
     }
 
     const getImage = (user_id, token) => {
+        console.log('logging out the messages: ',message);
         axios.get(userDataUrl + user_id + '/photo', {
             headers: {
                 'X-Authorization': token,
             }
         }).then(res => {
-            console.log('logging image data: ',res.data);
             setImages(prev => [...prev, {user_id: user_id, image: res.data.uri}]);
             setLoading(false);
         }).catch(error => {
             console.log(error);
+            const {
+                status
+            } = error.response;
+            httpErrors(status);
         })
     }
 
     const returnUsersImage = (user_id) => {
-        const filter = images.filter(item => item.user_id === user_id ? user_id : 4);
+        const filter = images.filter(item => parseInt(item.user_id) === parseInt(user_id));
         return filter[0]?.image;
     }
 
@@ -160,24 +192,6 @@ export default function Channel({ route, navigation }) {
             retrieveId('id');
         }
     }, [token]);
-
-    /**
-     * Handle Keyboard open & close event
-     */
-    useEffect(() => {
-        const windowWidth = Dimensions.get('window').width;
-        const showSubscription = Keyboard.addListener('keyboardDidShow', (event) => {
-        setKeyboardOffset(windowWidth - event.endCoordinates.height);
-        });
-        const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
-        setKeyboardOffset(0);
-        });
-
-        return () => {
-        showSubscription.remove();
-        hideSubscription.remove();
-        };
-    }, []);
 
     return (
         <SafeAreaView style={styles.parent}>
@@ -207,7 +221,7 @@ export default function Channel({ route, navigation }) {
                                         </Pressable>
                                     </View>
                                 }
-                                renderItem={({item}) => <Message message={item?.message} message_id={item?.message_id} image={returnUsersImage(item?.user_id)} isUser={parseInt(item.author.user_id) === parseInt(userId) ? true : false} timestamp={item?.timestamp} handleModal={handleModal} />}
+                                renderItem={({item}) => <Message message={item?.message} message_id={item?.message_id} image={returnUsersImage(item?.author?.user_id)} isUser={parseInt(item.author.user_id) === parseInt(userId) ? true : false} timestamp={item?.timestamp} handleModal={handleModal} />}
                                 keyExtractor={item => item?.message_id}
                             />
                         </SafeAreaView>

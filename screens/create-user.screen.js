@@ -2,7 +2,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Button, Dimensions, Keyboard, StyleSheet, View } from "react-native";
+import { Button, Dimensions, Keyboard, KeyboardAvoidingView, StyleSheet, View } from "react-native";
 
 // COMPONENTS
 import CustomButton from "../components/custom-button.component";
@@ -259,7 +259,7 @@ export default function CreateUser({ navigation }) {
     // --------------------------------------------------------------------------------------------
 
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView style={styles.container}>
             <View style={[styles.userDetails, { bottom: keyboardOffset }]}>
 
                 {/* FLASH ERROR */}
@@ -324,7 +324,7 @@ export default function CreateUser({ navigation }) {
                     }
                 />
             </View>
-        </View>
+        </KeyboardAvoidingView>
     )
 }
 

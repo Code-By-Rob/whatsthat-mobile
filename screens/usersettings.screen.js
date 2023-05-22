@@ -4,10 +4,12 @@ import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Image, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 import CustomTextInput from '../components/text-input.component';
 import UserDetails from '../components/user-details.component';
 import UserSettingsHeader from '../components/user-settings-header.component';
 import { serverURL } from "../utils/enums.util";
+import httpErrors from '../utils/httpErrors.util';
 const logoutUrl = serverURL + '/logout'; // var serverURL => './utils/enums.util.js'
 const userDataUrl = serverURL + '/user'; // var serverURL => './utils/enums.util.js'
 
@@ -32,8 +34,6 @@ export default function UserSettingScreen ({ navigation }) {
             aspect: [1, 1],
             quality: 1,
         })
-
-        console.log(result);
         if (!result.canceled) {
             setImageUri(result.assets[0].uri);
             setImage(result.assets[0]);
@@ -45,11 +45,25 @@ export default function UserSettingScreen ({ navigation }) {
                     }
                 }).then(res => {
                     console.log('Logging response: ',res.data);
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Profile Photo Updated!',
+                        text2: 'You have successfully updated your profile photo!'
+                    })
                 }).catch(error => {
                     console.log(error);
+                    if (error.response) {
+                        const {
+                            status
+                        } = error.response;
+                        httpErrors(status);
+                    }
                 })
             } catch(error) {
-
+                const {
+                    status
+                } = error.response;
+                httpErrors(status);
             }
         } else {
             alert('You did not select any image');
@@ -57,13 +71,13 @@ export default function UserSettingScreen ({ navigation }) {
     }
 
     const getUserDetails = (token, user_id) => {
-        console.log('Logging the token before getting user details: ', token, user_id);
         axios.get(userDataUrl + `/${user_id}`, {
             headers: {
                 'X-Authorization': token,
             }
         }).then(res => {
             console.log(res.data)
+            console.log('Got here!');
             const {
                 first_name,
                 last_name,
@@ -73,10 +87,14 @@ export default function UserSettingScreen ({ navigation }) {
             setLast_name(last_name);
             setEmail(email);
             getImage(user_id, token);
-        }).catch(err => {
-            console.log(err);
-            console.log(err.response);
-            console.log(err.request);
+        }).catch(error => {
+            console.log(error);
+            if (error.response) {
+                const {
+                    status
+                } = error.response;
+                httpErrors(status);
+            }
         });
     }
 
@@ -86,10 +104,15 @@ export default function UserSettingScreen ({ navigation }) {
                 'X-Authorization': token,
             }
         }).then(res => {
-            console.log(res.data);
+            console.log(typeof res.data);
             setImageUri(res.data.uri);
         }).catch(error => {
-            console.log(error);
+            if (error.response) {
+                const {
+                    status
+                } = error.response;
+                httpErrors(status);
+            }
         })
     }
 
@@ -103,13 +126,16 @@ export default function UserSettingScreen ({ navigation }) {
                 'X-Authorization': token
             }
         })
-        .then(res => {
-            console.log(res);
-            console.log('Got here!');
+        .then(() => {
             navigation.navigate('Login', {});
         })
-        .catch(err => {
-            console.log(err);
+        .catch(error => {
+            if (error.response) {
+                const {
+                    status
+                } = error.response;
+                httpErrors(status);
+            }
         })
     }
 
@@ -127,8 +153,18 @@ export default function UserSettingScreen ({ navigation }) {
                 }
             }).then(res => {
                 console.log(res.data);
+                Toast.show({
+                    type: 'success',
+                    text1: 'Profile Updated!',
+                    text2: 'You have successfully updated your profile!'
+                })
             }).catch(error => {
-                console.log(error);
+                if (error.response) {
+                    const {
+                        status
+                    } = error.response;
+                    httpErrors(status);
+                }
             })
         }
     }
@@ -185,10 +221,6 @@ export default function UserSettingScreen ({ navigation }) {
                         </View>
                         :
                         <View>
-                            {
-                                first_name.length > 0 && 
-                                last_name.length > 0 && 
-                                email.length > 0 ?
                                 <View>
                                     <UserDetails 
                                         label={'First name'}
@@ -203,9 +235,6 @@ export default function UserSettingScreen ({ navigation }) {
                                         detail={email}
                                     />
                                 </View>
-                                :
-                                null
-                            }
                         </View>
                     }
                 </View>

@@ -1,3 +1,4 @@
+// * IMPORTS
 import {
     AntDesign,
     Octicons
@@ -5,10 +6,20 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { FlatList, KeyboardAvoidingView, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+    FlatList,
+    KeyboardAvoidingView,
+    Pressable,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View
+} from 'react-native';
 import Toast from 'react-native-toast-message';
 import Contact from '../components/contact.component';
 import { serverURL } from '../utils/enums.util';
+// * API
 const contactsUrl = serverURL + '/contacts';
 const searchUrl = serverURL + '/search'
 const userUrl = serverURL + '/user/'
@@ -16,6 +27,7 @@ const blockedUrl = serverURL + '/blocked'
 
 export default function ContactsScreen ({}) {
 
+    // * STATES
     const [token, setToken] = useState(null);
     const [userId, setUserId] = useState(null);
     const [contacts, setContacts] = useState([]);
@@ -29,6 +41,11 @@ export default function ContactsScreen ({}) {
     }
     const [flag, setFlag] = useState(tabsFlagOptions['contacts']);
 
+    /**
+     * Retrieves an array of objects from the server 
+     * containing data regarding the contact list of a user.
+     * @param {String} token session token used in auth
+     */
     const getContacts = (token) => {
         setFlag(tabsFlagOptions['contacts']);
         axios.get(contactsUrl, {
@@ -36,13 +53,19 @@ export default function ContactsScreen ({}) {
                 'X-Authorization' : token,
             }
         }).then(res => {
-            console.log(res.data);
             setContacts(res.data);
         }).catch(error => {
-            console.log(error);
+            const {
+                status
+            } = error.response;
+            httpErrors(status);
         })
     }
 
+    /**
+     * Retrieves an array of objects from the server identifying blocked users 
+     * for the individual.
+     */
     const getBlocked = () => {
         setFlag(tabsFlagOptions['blocked']);
         axios.get(blockedUrl, {
@@ -50,42 +73,73 @@ export default function ContactsScreen ({}) {
                 'X-Authorization': token,
             }
         }).then(res => {
-            console.log('Logging blocked: ',res.data);
             setBlocked(res.data);
         }).catch(error => {
-            console.log(error);
+            const {
+                status
+            } = error.response;
+            httpErrors(status);
         })
     }
 
+    /**
+     * Handles changing to the search scene and setting the 
+     * search query state.
+     * @param {String} text 
+     */
     const hanldeSearchChange = (text) => {
-        console.log(text);
-        console.log('got here!');
-        text.length > 0 ? setFlag(tabsFlagOptions['search']) : setFlag(tabsFlagOptions['contacts']);
+        // text.length > 0 ? setFlag(tabsFlagOptions['search']) : setFlag(tabsFlagOptions['contacts']);
+        if (text.length === 0) {
+            // retrieve all the contacts
+            getContacts(token);
+            setSearchUsers([]);
+        }
         setQuery(text);
     }
 
+    /**
+     * Handles posting a search request to the server and 
+     * retrieving the data and setting state.
+     */
     const search = () => {
-        axios.get(searchUrl + `?q=${query}&search_in=${'all'}&limit=${10}`, {
+        axios.get(searchUrl + `?q=${query}&search_in=${
+            flag === tabsFlagOptions['search'] ? 'all' : 'contacts'
+        }&limit=${10}`, {
             headers: {
                 'X-Authorization': token
             }
         })
-            .then(res => {
-                console.log(res.data);
-                setSearchUsers(res.data);
-            })
-            .catch(error => {
-                console.log(error);
-            })
+        .then(res => {
+            // Set the correct state depending on the search_in query.
+            flag === tabsFlagOptions['search'] ? setSearchUsers(res.data) : setContacts(res.data);
+            if (res.data.length === 0) {
+                // let the user know that there is no one of the name they searched
+                Toast.show({
+                    type: 'error',
+                    text1: 'No Users',
+                    text2: 'There are no users found from that query',
+                })
+            }
+        })
+        .catch(error => {
+            const {
+                status
+            } = error.response;
+            httpErrors(status);
+        })
     }
 
+    /**
+     * Handles posting a user identification marker to the server 
+     * and updating the contacts state.
+     * @param {Number} user_id 
+     */
     const addContact = (user_id) => {
         axios.post(userUrl + user_id + '/contact', {}, {
             headers: {
                 'X-Authorization': token,
             }
         }).then(res => {
-            console.log(res.data);
             getContacts(token);
             Toast.show({
                 type: 'success',
@@ -93,15 +147,18 @@ export default function ContactsScreen ({}) {
                 text2: 'Has been added as a contact!',
             })
         }).catch(error => {
-            console.log(error);
-            Toast.show({
-                type: 'error',
-                text1: 'Problem',
-                text2: 'Has been added as a contact!',
-            })
+            const {
+                status
+            } = error.response;
+            httpErrors(status);
         })
     }
 
+    /**
+     * Handles posting a user identification marker to the server 
+     * and updating the contacts state.
+     * @param {Number} user_id 
+     */
     const removeContact = (user_id) => {
         console.log(token);
         axios.delete(userUrl + user_id + '/contact', {
@@ -114,13 +171,21 @@ export default function ContactsScreen ({}) {
             Toast.show({
                 type: 'success',
                 text1: 'Removed Contact',
-                text2: 'Has been added as a contact!',
+                text2: 'Successfully removed the contact!',
             })
         }).catch(error => {
-            console.log(error);
+            const {
+                status
+            } = error.response;
+            httpErrors(status);
         })
     }
 
+    /**
+     * Handles posting a user identification marker to the server 
+     * and updating the contacts state.
+     * @param {Number} user_id 
+     */
     const blockContact = (user_id) => {
         axios.post(userUrl + user_id + '/block', {}, {
             headers: {
@@ -132,13 +197,21 @@ export default function ContactsScreen ({}) {
             Toast.show({
                 type: 'success',
                 text1: 'User Blocked',
-                text2: 'Has been added as a contact!',
+                text2: 'You have successfully blocked the contact!',
             })
         }).catch(error => {
-            console.log(error);
+            const {
+                status
+            } = error.response;
+            httpErrors(status);
         })
     }
 
+    /**
+     * Handles deletion of a blocked user using a user identification marker 
+     * and updating the blocked contacts state.
+     * @param {Number} user_id 
+     */
     const unblockContact = (user_id) => {
         axios.delete(userUrl + user_id + '/block', {
             headers: {
@@ -150,23 +223,28 @@ export default function ContactsScreen ({}) {
             Toast.show({
                 type: 'success',
                 text1: 'User Unblocked',
-                text2: 'Has been added as a contact!',
+                text2: 'The user has been unblocked and added to your contacts again!',
             })
         }).catch(error => {
-            console.log(error);
+            const {
+                status
+            } = error.response;
+            httpErrors(status);
         })
     }
 
+    /**
+     * Handles retrieval of data on first render and setting states for 
+     * future calls to the server.
+     */
     useEffect(() => {
         const retrieveToken = async (key) => {
             const res = await AsyncStorage.getItem(key);
-            console.log(res);
             setToken(res);
             getContacts(res);
         }
         const retrieveId = async (key) => {
             const res = await AsyncStorage.getItem(key);
-            console.log(res);
             setUserId(res);
         }
         retrieveToken('token');
@@ -182,10 +260,10 @@ export default function ContactsScreen ({}) {
                         placeholder={'Search...'}
                         placeholderTextColor={'#475549'}
                         autoCorrect={true}
-                        autoCapitalize={true}
+                        autoCapitalize={'words'}
                         onChangeText={(text) => hanldeSearchChange(text)}
                         value={query}
-                        onPressIn={() => setFlag(tabsFlagOptions['search'])}
+                        // onPressIn={() => setFlag(tabsFlagOptions['search'])}
                     />
                     <Pressable onPress={search} style={styles.searchButton}>
                         <AntDesign name='rightcircleo' size={32} color={'#4F46E5'} />
@@ -220,18 +298,22 @@ export default function ContactsScreen ({}) {
                                     :
                                     <Octicons name='blocked' size={64} color={'#fff'} />
                                 }
-                                <Text style={{color: '#fff'}}>
+                                <Text style={{color: '#fff', marginTop: 16}}>
                                     {/* Add an image here */}
                                     This list is empty!
                                 </Text>
                             </View>
                         }
                         renderItem={({item}) => (
-                            <View>
+                            parseInt(item?.user_id) === parseInt(userId) ?
+                            null
+                            :
+                            (
+                                <View>
                                 {
                                     flag === tabsFlagOptions['contacts'] && (
                                         <Pressable key={item?.user_id}>
-                                            <Contact first_name={item?.first_name} last_name={item?.last_name} image={null} user_id={item?.user_id} addContact={addContact} removeContact={removeContact} blockContact={blockContact} isContact={true} />
+                                            <Contact first_name={item?.first_name || item?.given_name} last_name={item?.last_name || item?.family_name} image={null} user_id={item?.user_id} addContact={addContact} removeContact={removeContact} blockContact={blockContact} isContact={true} />
                                         </Pressable>
                                     )
                                 }
@@ -253,7 +335,8 @@ export default function ContactsScreen ({}) {
                                         </Pressable>
                                     )
                                 }
-                            </View>
+                                </View>
+                            )
                         )}
                         keyExtractor={item => item?.user_id}
                     />
@@ -285,7 +368,8 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         flexDirection: 'column',
-        alignItems: 'center'
+        alignItems: 'center',
+        paddingVertical: 32
     },
     input: {
         height: 40,

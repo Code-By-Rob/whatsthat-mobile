@@ -1,13 +1,26 @@
+import {
+    AntDesign,
+} from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { Button, FlatList, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+    Button,
+    FlatList,
+    Pressable,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View
+} from 'react-native';
 import Modal from 'react-native-modal';
+import Toast from 'react-native-toast-message';
 import Chatfeed from '../components/channel.component';
 import ChatHeader from '../components/chat-header.component';
 import { serverURL } from '../utils/enums.util';
-import { chatData } from '../utils/testdata.util';
+import httpErrors from '../utils/httpErrors.util';
 const getChats = serverURL + '/chat'; // var serverURL => './utils/enums.util.js'
 const createChat = serverURL + '/chat'; // var serverURL => './utils/enums.util.js'
 
@@ -28,37 +41,14 @@ export default function ChatsScreen ({ navigation }) {
             }
         })
         .then(res => {
-            /**
-             * Example Value : Schema
-             *  [
-                    {
-                        "chat_id": 14,
-                        "name": "The Rod Stewart Appreciation Society",
-                        "creator": {
-                        "user_id": 14,
-                        "first_name": "Ashley",
-                        "last_name": "Williams",
-                        "email": "ashley.williams@mmu.ac.uk"
-                        },
-                        "last_message": {
-                            "message_id": 14,
-                            "timestamp": 1640013942,
-                            "message": "Welcome to all our new members",
-                            "author": {
-                                "user_id": 14,
-                                "first_name": "Ashley",
-                                "last_name": "Williams",
-                                "email": "ashley.williams@mmu.ac.uk"
-                            }
-                        }
-                    }
-                ]
-             */
             console.log('Logging chats: ',res.data);
             setChats(res.data);
         })
-        .catch(err => {
-            console.log(err);
+        .catch(error => {
+            const {
+                status
+            } = error.response;
+            httpErrors(status);
         })
     }
 
@@ -75,9 +65,16 @@ export default function ChatsScreen ({ navigation }) {
                 onChangeText('');
                 getChannels();
                 handleModal();
+                Toast.show({
+                    type: 'success',
+                    text1: 'Channel Created!',
+                    text2: 'You have created a new channel!'
+                })
             }).catch(error => {
-                console.log('Logging error',error);
-                console.log('Logging error',error.message);
+                const {
+                    status
+                } = error.response;
+                httpErrors(status);
             })
         } else {
             /**
@@ -107,7 +104,18 @@ export default function ChatsScreen ({ navigation }) {
                 <ChatHeader showModal={handleModal} />
                 <SafeAreaView style={styles.otherContainer}>
                     <FlatList
-                        data={chats.length > 0 ? chats : chatData}
+                        // ! FOR TESTING
+                        // * data={chats.length > 0 ? chats : chatData}
+                        data={chats}
+                        ListEmptyComponent={
+                            <View style={styles.noChannel}>
+                                <AntDesign name='message1' size={64} color={'#fff'} />
+                                <Text style={{color: '#fff', fontSize: 18, marginTop: 18}}>No Channels</Text>
+                                <Pressable onPress={handleModal} style={{backgroundColor: '#4F46E5', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, marginTop: 24}}>
+                                    <Text style={{fontSize: 18, color: '#fff'}}>Create a channel!</Text>
+                                </Pressable>
+                            </View>
+                        }
                         renderItem={({item}) => (
                             <Pressable onPress={() => navigation.navigate('Channel', { chat_id: item.chat_id })}>
                                 <Chatfeed name={item.name} chat_id={item.chat_id} last_message={item.last_message} />
@@ -170,5 +178,11 @@ const styles = StyleSheet.create({
         borderBottomColor: '#fff',
         padding: 10,
         color: '#fff'
+    },
+    noChannel: {
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center',
+        paddingVertical: 32
     }
 })

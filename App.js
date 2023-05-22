@@ -36,7 +36,18 @@ const toastConfig = {
   error: (props) => (
     <ErrorToast
       {...props}
-      style={{backgroundColor: '#000'}}
+      style={{
+        backgroundColor: '#000',
+        borderLeftColor: '#DC2626',
+        top: 32,
+        shadowColor: '#fff',
+        shadowOpacity: 0.3,
+        shadowOffset: {
+            width: 0,
+            height: 1
+        },
+        shadowRadius: 40
+      }}
       text1Style={{
         color: '#fff'
       }}
