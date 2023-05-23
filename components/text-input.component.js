@@ -21,9 +21,7 @@ export default function CustomTextInput({
 }) {
     return (
         <View>
-            <Text
-                style={styles.label}
-            >{label}</Text>
+            <Text style={styles.label}>{label}</Text>
             <TextInput 
                 style={styles.input}
                 placeholder={placeholder}

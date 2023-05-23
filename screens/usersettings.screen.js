@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Image, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-toast-message';
+import CustomButton from '../components/custom-button.component';
 import CustomTextInput from '../components/text-input.component';
 import UserDetails from '../components/user-details.component';
 import UserSettingsHeader from '../components/user-settings-header.component';
@@ -23,6 +24,7 @@ export default function UserSettingScreen ({ navigation }) {
     const [last_name, setLast_name] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [user, setUser] = useState({});
     const [image, setImage] = useState(null);
     const [imageUri, setImageUri] = useState(null);
 
@@ -86,6 +88,7 @@ export default function UserSettingScreen ({ navigation }) {
             setFirst_name(first_name);
             setLast_name(last_name);
             setEmail(email);
+            setUser({})
             getImage(user_id, token);
         }).catch(error => {
             console.log(error);
@@ -140,32 +143,38 @@ export default function UserSettingScreen ({ navigation }) {
     }
 
     const handleSave = () => {
-        setIsEdit(prev => !prev);
         if (isEdit) {
-            axios.patch(userDataUrl + `/${userId}`, {
-                first_name: first_name,
-                last_name: last_name,
-                email: email,
-                password: password,
-            }, {
-                headers: {
-                    'X-Authorization': token
-                }
-            }).then(res => {
-                console.log(res.data);
-                Toast.show({
-                    type: 'success',
-                    text1: 'Profile Updated!',
-                    text2: 'You have successfully updated your profile!'
+            if (Object.keys(user).length > 0) {
+                console.log('Logging the user object: ',user);
+                axios.patch(userDataUrl + `/${userId}`, user, {
+                    headers: {
+                        'X-Authorization': token
+                    }
+                }).then(res => {
+                    console.log(res.data);
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Profile Updated!',
+                        text2: 'You have successfully updated your profile!'
+                    })
+                    getUserDetails(token, userId);
+                    setIsEdit(prev => !prev);
+                }).catch(error => {
+                    if (error.response) {
+                        const {
+                            status
+                        } = error.response;
+                        httpErrors(status);
+                    }
                 })
-            }).catch(error => {
-                if (error.response) {
-                    const {
-                        status
-                    } = error.response;
-                    httpErrors(status);
-                }
-            })
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'No Changes',
+                    text2: 'No changes have been made to your account'
+                });
+                setIsEdit(prev => !prev);
+            }
         }
     }
 
@@ -192,31 +201,34 @@ export default function UserSettingScreen ({ navigation }) {
                             source={imageUri ? { uri: imageUri } : require('../assets/avataaars.png')}
                         />
                     </Pressable>
-                    <Pressable onPress={handleSave} style={styles.button}>
-                        <Text style={styles.text}>{ isEdit ? 'Save' : 'Edit' }</Text>
-                    </Pressable>
+                    <View style={{marginVertical: 12}}>
+                        <CustomButton onPressFunction={() => isEdit ? handleSave() : setIsEdit(prev => !prev)} text={isEdit ? 'Save' : 'Edit'} />
+                    </View>
                     {
                         isEdit ?
                         <View>
                             <CustomTextInput 
                                 label={'First name'}
-                                value={first_name}
-                                handleChange={setFirst_name}
+                                value={user?.first_name}
+                                handleChange={(text) => setUser(prev => ({...prev, first_name: text}))}
+                                placeholder={first_name}
                             />
                             <CustomTextInput 
                                 label={'Last name'}
-                                value={last_name}
-                                handleChange={setLast_name}
+                                value={user?.last_name}
+                                handleChange={(text) => setUser(prev => ({...prev, last_name: text}))}
+                                placeholder={last_name}
                             />
                             <CustomTextInput 
                                 label={'Email'}
-                                value={email}
-                                handleChange={setEmail}
+                                value={user?.email}
+                                handleChange={(text) => setUser(prev => ({...prev, email: text}))}
+                                placeholder={email}
                             />
                             <CustomTextInput 
                                 label={'Password'}
-                                value={password}
-                                handleChange={setPassword}
+                                value={user?.password}
+                                handleChange={(text) => setUser(prev => ({...prev, password: text}))}
                             />
                         </View>
                         :

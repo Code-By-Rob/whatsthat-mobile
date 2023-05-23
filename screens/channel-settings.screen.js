@@ -13,17 +13,20 @@ import {
     SafeAreaView,
     StyleSheet,
     Text,
-    TextInput,
     View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import ChannelHeader from "../components/channel-header.component";
 import Contact from '../components/contact.component';
+import CustomButton from '../components/custom-button.component';
+import SearchInput from '../components/search-input.component';
+import CustomTextInput from '../components/text-input.component';
 import { serverURL } from '../utils/enums.util';
 import httpErrors from '../utils/httpErrors.util';
 const updateChannelUrl = serverURL + '/chat/'
 const userDataUrl = serverURL + '/user/';
 const contactsUrl = serverURL + '/contacts'
+const searchUrl = serverURL + '/search'
 
 export default function ChannelSettings({ route, navigation }) {
 
@@ -34,6 +37,7 @@ export default function ChannelSettings({ route, navigation }) {
     const [flag, setFlag] = useState(true);
     const [members, setMembers] = useState([]);
     const [contacts, setContacts] = useState([]);
+    const [query, setQuery] = useState('');
     const [images, setImages] = useState([]);
 
     const getChannelData = (token) => {
@@ -141,35 +145,76 @@ export default function ChannelSettings({ route, navigation }) {
     }
 
     const updateChannel = () => {
-        axios.patch(updateChannelUrl + chat_id, {
-            name: channelName,
-        }, {
-            headers: {
-                'X-Authorization' : token,
-            }
-        }).then(res => {
-            console.log(res.data);
-            Toast.show({
-                type: 'success',
-                text1: 'Updated Channel',
-                text2: 'Your channel has been updated!',
+        if (channelName.length > 0) {
+            axios.patch(updateChannelUrl + chat_id, {
+                name: channelName,
+            }, {
+                headers: {
+                    'X-Authorization' : token,
+                }
+            }).then(res => {
+                console.log(res.data);
+                Toast.show({
+                    type: 'success',
+                    text1: 'Updated Channel',
+                    text2: 'Your channel has been updated!',
+                })
+            }).catch(error => {
+                console.log(error);
+                const {
+                    status
+                } = error.response;
+                httpErrors(status);
             })
-        }).catch(error => {
-            console.log(error);
-            /**
-             * Status Errors:
-             * - 400 => Bad Request
-             * - 401 => Unauthorised
-             * - 403 => Forbidden
-             * - 404 => Not Found
-             * - 500 => Server Error
-             */
-            const {
-                status
-            } = error.response;
-            httpErrors(status);
-        })
+        } else {
+            Toast.show({
+                type: 'error',
+                text1: 'Channel Name Invalid',
+                text2: 'The channel name must have a length greater than zero!'
+            })
+        }
     }
+
+    const handleContactsSearch = (text) => {
+        if (text.length === 0) {
+            getContacts(token);
+        }
+        setQuery(text);
+    }
+
+    const search = () => {
+        if (query.length > 0) {
+            axios.get(searchUrl + `?q=${query}&search_in=contacts&limit=${10}`, {
+                headers: {
+                    'X-Authorization': token
+                }
+            })
+            .then(res => {
+                if (res.data.length === 0) {
+                    // let the user know that there is no one of the name they searched
+                    Toast.show({
+                        type: 'error',
+                        text1: 'No Users',
+                        text2: 'There are no users found from that query',
+                    })
+                } else {
+                    setContacts(res.data);
+                }
+            })
+            .catch(error => {
+                const {
+                    status
+                } = error.response;
+                httpErrors(status);
+            })
+        } else {
+            Toast.show({
+                type: 'error',
+                text1: 'Query Empty',
+                text2: 'Query is empty. To search please enter a user\'s name.'
+            });
+        }
+    };
 
     useEffect(() => {
         if (!token) {
@@ -189,25 +234,34 @@ export default function ChannelSettings({ route, navigation }) {
             <View style={styles.container}>
                 <ChannelHeader navigation={navigation} />
                 <Text style={ styles.title }>Channel Settings</Text>
-                <TextInput
-                    style={styles.input}
-                    onChangeText={setChannelName}
+                <CustomTextInput
+                    handleChange={setChannelName}
                     value={channelName}
                 />
-                <Pressable onPress={updateChannel} style={styles.button}>
-                    <Text style={styles.text}>Save</Text>
-                </Pressable>
-                <Text style={ styles.title }>Member Settings</Text>
+                {/* <Pressable onPress={updateChannel} style={styles.button}>
+                    <Text style={[styles.text, { textAlign: 'center' }]}>Save</Text>
+                </Pressable> */}
+                <CustomButton onPressFunction={updateChannel} text='Save' />
+                <Text style={styles.title}>Member Settings</Text>
                 <View style={styles.tabs}>
-                    {/* Show the user's contacts */}
+                    {/* Show the channel's members */}
                     <Pressable onPress={() => setFlag(true)} style={[styles.tabButton, { borderBottomLeftRadius: 12, borderTopLeftRadius: 12, borderEndWidth: 0 }, flag ? { backgroundColor: '#4F46E5' } : null]}>
                         <Text style={[styles.tabText, flag ? { color: '#fff' } : null]}>Members</Text>
                     </Pressable>
-                    {/* Show the user's blocked list */}
+                    {/* Show the user's contacts */}
                     <Pressable onPress={() => setFlag(false)} style={[styles.tabButton, { borderBottomRightRadius: 12, borderTopRightRadius: 12, borderStartWidth: 0 }, flag ? null : { backgroundColor: '#4F46E5' }]}>
                         <Text style={[styles.tabText, flag ? null : { color: '#fff' }]}>Contacts</Text>
                     </Pressable>
                 </View>
+                {/* Add contact search functionality here */}
+                {
+                    flag ?
+                    null
+                    :
+                    <View style={{ marginHorizontal: 16, marginTop: 12 }}>
+                        <SearchInput handleChangeText={(text) => handleContactsSearch(text)} search={search} query={query} />   
+                    </View>
+                }
                 {
                     token !== null ?
                     <SafeAreaView>
@@ -228,7 +282,7 @@ export default function ChannelSettings({ route, navigation }) {
                                         flag ?
                                         <ChannelMember key={item?.user_id} first_name={item?.first_name} last_name={item?.last_name} user_id={item?.user_id} token={token} chat_id={chat_id} image={returnUsersImage(item?.user_id)} removeUser={removeContactFromChannel} />
                                         :
-                                        <Contact key={item?.user_id} first_name={item?.first_name} last_name={item?.last_name} image={null} user_id={item?.user_id} addContact={addContactToChannel} isContact={false} isBlocked={false} />
+                                        <Contact key={item?.user_id} first_name={item?.first_name || item?.given_name} last_name={item?.last_name || item?.family_name} image={null} user_id={item?.user_id} addContact={addContactToChannel} isContact={false} isBlocked={false} />
                                     }
                                 </View>
                             )}
@@ -270,13 +324,14 @@ const styles = StyleSheet.create({
         fontSize: 26,
         color: '#fff',
         textAlign: 'center',
-        marginVertical: 24
+        marginVertical: 16
     },
     button: {
         backgroundColor: '#4F46E5',
         borderRadius: 5,
         paddingHorizontal: 10,
         paddingVertical: 8,
+        marginVertical: 12
     },
     memberContainer: {
         flexDirection: 'row',
@@ -294,14 +349,6 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     text: {
-        color: '#fff'
-    },
-    input: {
-        height: 40,
-        margin: 12,
-        borderWidth: 1,
-        borderColor: '#fff',
-        padding: 10,
         color: '#fff'
     },
     userImage: {

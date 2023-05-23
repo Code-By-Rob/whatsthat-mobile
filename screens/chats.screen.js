@@ -80,7 +80,11 @@ export default function ChatsScreen ({ navigation }) {
             /**
              * Tell the user to enter a name
              */
-            console.log('text is empty!');
+            Toast.show({
+                type: 'error',
+                text1: 'Channel needs a name',
+                text2: 'Please enter a name for your new channel!'
+            })
         }
     }
 

@@ -3,6 +3,7 @@ import {
     Ionicons
 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useIsFocused } from '@react-navigation/native';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import {
@@ -31,6 +32,7 @@ const userDataUrl = serverURL + '/user/';
 export default function Channel({ route, navigation }) {
 
     const { chat_id } = route.params;
+    const isFocused = useIsFocused();
     const [token, setToken] = useState(null);
     const [userId, setUserId] = useState(null);
     const [name, setName] = useState(null);
@@ -75,8 +77,8 @@ export default function Channel({ route, navigation }) {
                 } = error.response;
                 httpErrors(status);
             }
-        })
-    }
+        });
+    };
 
     const sendMessage = () => {
         if (message.length > 0) {
@@ -95,38 +97,46 @@ export default function Channel({ route, navigation }) {
                     status
                 } = error.response;
                 httpErrors(status);
-            })
+            });
         }
-    }
+    };
 
     const updateMessage = () => {
-        axios.patch(getChannelDetails + chat_id + '/message/' + message_id, {
-            message: editMessage
-        }, {
-            headers: {
-                'X-Authorization': token
-            }
-        }).then(res => {
-            console.log('logging update message success: ',res.data);
-            setIsModalVisible(prev => !prev);
-            getChannelData(token);
+        if (editMessage.length > 0) {
+            axios.patch(getChannelDetails + chat_id + '/message/' + message_id, {
+                message: editMessage
+            }, {
+                headers: {
+                    'X-Authorization': token
+                }
+            }).then(res => {
+                console.log('logging update message success: ',res.data);
+                setIsModalVisible(prev => !prev);
+                getChannelData(token);
+                Toast.show({
+                    type: 'success',
+                    text1: 'Updated Message!',
+                    text2: 'The message has been updated.'
+                });
+                /**
+                 * Write to new message to the message
+                 */
+            }).catch(error => {
+                console.log('logging update message error: ',error);
+                console.log('logging update message error: ',error.message);
+                const {
+                    status
+                } = error.response;
+                httpErrors(status);
+            });
+        } else {
             Toast.show({
-                type: 'success',
-                text1: 'Updated Message!',
-                text2: 'The message has been updated.'
-            })
-            /**
-             * Write to new message to the message
-             */
-        }).catch(error => {
-            console.log('logging update message error: ',error);
-            console.log('logging update message error: ',error.message);
-            const {
-                status
-            } = error.response;
-            httpErrors(status);
-        })
-    }
+                type: 'error',
+                text1: 'Message Invalid!',
+                text2: 'A message of length zero is invalid. Delete the message instead!'
+            });
+        }
+    };
 
     const deleteMessage = () => {
         axios.delete(getChannelDetails + chat_id + '/message/' + message_id, {
@@ -149,11 +159,10 @@ export default function Channel({ route, navigation }) {
                     status
                 } = error.response;
                 httpErrors(status);
-            })
-    }
+            });
+    };
 
     const getImage = (user_id, token) => {
-        console.log('logging out the messages: ',message);
         axios.get(userDataUrl + user_id + '/photo', {
             headers: {
                 'X-Authorization': token,
@@ -191,7 +200,7 @@ export default function Channel({ route, navigation }) {
             }
             retrieveId('id');
         }
-    }, [token]);
+    }, [token, isFocused]);
 
     return (
         <SafeAreaView style={styles.parent}>

@@ -1,4 +1,4 @@
-import { View, Pressable, Text, StyleSheet } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 
 export default function CustomButton({ onPressFunction, text = 'Button' }) {
     return (
@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
         marginRight: 'auto',
         padding: 12,
         borderRadius: 80,
-        margin: 24,
+        margin: 12,
     },
     buttonLabel: {
         color: '#ffffff',

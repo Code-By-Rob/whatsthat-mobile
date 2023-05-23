@@ -13,11 +13,11 @@ import {
     SafeAreaView,
     StyleSheet,
     Text,
-    TextInput,
     View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import Contact from '../components/contact.component';
+import SearchInput from '../components/search-input.component';
 import { serverURL } from '../utils/enums.util';
 // * API
 const contactsUrl = serverURL + '/contacts';
@@ -87,7 +87,7 @@ export default function ContactsScreen ({}) {
      * search query state.
      * @param {String} text 
      */
-    const hanldeSearchChange = (text) => {
+    const handleSearchChange = (text) => {
         // text.length > 0 ? setFlag(tabsFlagOptions['search']) : setFlag(tabsFlagOptions['contacts']);
         if (text.length === 0) {
             // retrieve all the contacts
@@ -102,32 +102,40 @@ export default function ContactsScreen ({}) {
      * retrieving the data and setting state.
      */
     const search = () => {
-        axios.get(searchUrl + `?q=${query}&search_in=${
-            flag === tabsFlagOptions['search'] ? 'all' : 'contacts'
-        }&limit=${10}`, {
-            headers: {
-                'X-Authorization': token
-            }
-        })
-        .then(res => {
-            // Set the correct state depending on the search_in query.
-            flag === tabsFlagOptions['search'] ? setSearchUsers(res.data) : setContacts(res.data);
-            if (res.data.length === 0) {
-                // let the user know that there is no one of the name they searched
-                Toast.show({
-                    type: 'error',
-                    text1: 'No Users',
-                    text2: 'There are no users found from that query',
-                })
-            }
-        })
-        .catch(error => {
-            const {
-                status
-            } = error.response;
-            httpErrors(status);
-        })
-    }
+        if (query.length > 0) {
+            axios.get(searchUrl + `?q=${query}&search_in=${
+                flag === tabsFlagOptions['search'] ? 'all' : 'contacts'
+            }&limit=${10}`, {
+                headers: {
+                    'X-Authorization': token
+                }
+            })
+            .then(res => {
+                // Set the correct state depending on the search_in query.
+                flag === tabsFlagOptions['search'] ? setSearchUsers(res.data) : setContacts(res.data);
+                if (res.data.length === 0) {
+                    // let the user know that there is no one of the name they searched
+                    Toast.show({
+                        type: 'error',
+                        text1: 'No Users',
+                        text2: 'There are no users found from that query',
+                    })
+                }
+            })
+            .catch(error => {
+                const {
+                    status
+                } = error.response;
+                httpErrors(status);
+            })
+        } else {
+            Toast.show({
+                type: 'error',
+                text1: 'Query Empty',
+                text2: 'Query is empty. To search please enter a user\'s name.'
+            });
+        }
+    };
 
     /**
      * Handles posting a user identification marker to the server 
@@ -254,21 +262,7 @@ export default function ContactsScreen ({}) {
     return (
         <SafeAreaView style={styles.parent}>
             <KeyboardAvoidingView style={styles.keyboardAvoidingContainer}>
-                <View style={styles.searchContainer}>
-                    <TextInput 
-                        style={styles.input}
-                        placeholder={'Search...'}
-                        placeholderTextColor={'#475549'}
-                        autoCorrect={true}
-                        autoCapitalize={'words'}
-                        onChangeText={(text) => hanldeSearchChange(text)}
-                        value={query}
-                        // onPressIn={() => setFlag(tabsFlagOptions['search'])}
-                    />
-                    <Pressable onPress={search} style={styles.searchButton}>
-                        <AntDesign name='rightcircleo' size={32} color={'#4F46E5'} />
-                    </Pressable>
-                </View>
+                <SearchInput handleChangeText={(text) => handleSearchChange(text)} search={search} query={query} />
                 <View style={styles.tabs}>
                     {/* Show the user's contacts */}
                     <Pressable onPress={() => getContacts(token)} style={[styles.tabButton, { borderBottomLeftRadius: 12, borderTopLeftRadius: 12, borderEndWidth: 0 }, flag === tabsFlagOptions['contacts'] ? { backgroundColor: '#4F46E5' } : null]}>
@@ -353,11 +347,6 @@ const styles = StyleSheet.create({
     keyboardAvoidingContainer: {
         flex: 1
     },
-    searchContainer: {
-        backgroundColor: '#000',
-        flexDirection: 'row',
-        justifyContent: 'center',
-    },
     contactsContainer: {
         flex: 20,
     },
@@ -370,24 +359,6 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'center',
         paddingVertical: 32
-    },
-    input: {
-        height: 40,
-        margin: 6,
-        marginLeft: 'auto',
-        marginRight: 'auto',
-        borderWidth: 2,
-        padding: 10,
-        paddingHorizontal: 20,
-        borderColor: '#4F46E5',
-        borderRadius: 12,
-        width: '75%',
-        color: '#ffffff',
-    },
-    searchButton: {
-        width: '15%',
-        justifyContent: 'center',
-        alignItems: 'center'
     },
     tabs: {
         flex: 1,
