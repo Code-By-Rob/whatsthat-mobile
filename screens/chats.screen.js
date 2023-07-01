@@ -13,7 +13,8 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    View
+    View,
+    useColorScheme
 } from 'react-native';
 import Modal from 'react-native-modal';
 import Toast from 'react-native-toast-message';
@@ -26,6 +27,8 @@ const createChat = serverURL + '/chat'; // var serverURL => './utils/enums.util.
 
 export default function ChatsScreen ({ navigation }) {
 
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
     const isFocused = useIsFocused();
     const [token, setToken] = useState(null);
     const [chats, setChats] = useState([]); // stores the retrieved chats
@@ -104,24 +107,38 @@ export default function ChatsScreen ({ navigation }) {
 
     return (
         <SafeAreaView style={styles.parent}>
-            <View style={styles.container}>
+            <View style={[styles.container, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
                 <ChatHeader showModal={handleModal} />
                 <SafeAreaView style={styles.otherContainer}>
                     <FlatList
                         // ! FOR TESTING
                         // * data={chats.length > 0 ? chats : chatData}
+                        style={{ backgroundColor: isDarkMode ? '#000' : '#fff' }}
                         data={chats}
                         ListEmptyComponent={
                             <View style={styles.noChannel}>
                                 <AntDesign name='message1' size={64} color={'#fff'} />
                                 <Text style={{color: '#fff', fontSize: 18, marginTop: 18}}>No Channels</Text>
-                                <Pressable onPress={handleModal} style={{backgroundColor: '#4F46E5', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, marginTop: 24}}>
+                                <Pressable
+                                    onPress={handleModal}
+                                    style={{backgroundColor: '#4F46E5', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, marginTop: 24}}
+                                    accessible={true}
+                                    accessibilityLabel='Channel Modal'
+                                    accessibilityHint='Opens the channel creation modal'
+                                    accessibilityRole='button'
+                                >
                                     <Text style={{fontSize: 18, color: '#fff'}}>Create a channel!</Text>
                                 </Pressable>
                             </View>
                         }
                         renderItem={({item}) => (
-                            <Pressable onPress={() => navigation.navigate('Channel', { chat_id: item.chat_id })}>
+                            <Pressable
+                                onPress={() => navigation.navigate('Channel', { chat_id: item.chat_id })}
+                                accessible={true}
+                                accessibilityLabel={`${item.name} channel`}
+                                accessibilityHint={`Navigates to ${item.name} channel`}
+                                accessibilityRole='button'
+                            >
                                 <Chatfeed name={item.name} chat_id={item.chat_id} last_message={item.last_message} />
                             </Pressable>
                         )}
@@ -138,12 +155,28 @@ export default function ChatsScreen ({ navigation }) {
                             placeholderTextColor={'#ffffff60'}
                             style={styles.channelNameInput}
                             autoFocus={true}
+                            accessibilityLabel='Channel Name'
+                            accessibilityHint='The name of the new channel'
                         />
                         <View>
                             {/* Button above hides modal */}
-                            <Button title='Cancel' onPress={handleModal} />
+                            <Button
+                                title='Cancel'
+                                onPress={handleModal}
+                                accessible={true}
+                                accessibilityLabel='Cancel'
+                                accessibilityHint='Cancels creating a new channel'
+                                accessibilityRole='button'
+                            />
                             {/* Button Below creates a channel */}
-                            <Button title='Create' onPress={createChannel} />
+                            <Button
+                                title='Create'
+                                onPress={createChannel}
+                                accessible={true}
+                                accessibilityLabel='Create'
+                                accessibilityHint='Creates your new channel'
+                                accessibilityRole='button'
+                            />
                         </View>
                     </View>
                 </Modal>

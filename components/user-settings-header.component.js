@@ -1,8 +1,12 @@
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { Dimensions, StyleSheet, View, useColorScheme } from 'react-native';
 
 export default function UserSettingsHeader() {
+
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
+
     return (
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: isDarkMode ? '#00000060' : '#fff' }]}>
             {/* <Text>User Settings</Text> */}
         </View>
     )
@@ -16,7 +20,6 @@ const styles = StyleSheet.create({
         height: 50,
         flexDirection: 'row',
         justifyContent: 'flex-end',
-        backgroundColor: '#00000060',
         alignItems: 'center',
         paddingHorizontal: 24
     },

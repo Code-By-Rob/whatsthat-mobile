@@ -17,7 +17,8 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    View
+    View,
+    useColorScheme
 } from 'react-native';
 import Modal from 'react-native-modal';
 import Toast from 'react-native-toast-message';
@@ -31,6 +32,8 @@ const userDataUrl = serverURL + '/user/';
 
 export default function Channel({ route, navigation }) {
 
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
     const { chat_id } = route.params;
     const isFocused = useIsFocused();
     const [token, setToken] = useState(null);
@@ -203,16 +206,16 @@ export default function Channel({ route, navigation }) {
     }, [token, isFocused]);
 
     return (
-        <SafeAreaView style={styles.parent}>
+        <SafeAreaView style={[styles.parent, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
             {
                 loading ?
-                <View style={styles.loadingContainer}>
+                <View style={[styles.loadingContainer, { backgroundColor: isDarkMode ? '#000000' : '#ffffff' }]}>
                     <ActivityIndicator size={'large'} color={'#fff'} />
                 </View>
                 :
                 <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={styles.container}>
+                style={[styles.container, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
                     <ChannelHeader navigation={navigation} name={name} chat_id={chat_id} />
                     {
                         userId ?
@@ -222,10 +225,17 @@ export default function Channel({ route, navigation }) {
                                 inverted
                                 contentContainerStyle={{ flexDirection: 'column' }}
                                 ListEmptyComponent={
-                                    <View style={styles.noMessages}>
-                                        <AntDesign name='message1' size={64} color={'#fff'} />
-                                        <Text style={{color: '#fff', fontSize: 18, marginTop: 6}}>No Messages</Text>
-                                        <Pressable onPress={() => navigation.navigate('ChannelSettings', { chat_id: chat_id })} style={{backgroundColor: '#4F46E5', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, marginTop: 24}}>
+                                    <View style={[styles.noMessages, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
+                                        <AntDesign name='message1' size={64} color={ isDarkMode ? '#fff' : '#000' } />
+                                        <Text style={{color: isDarkMode ? '#fff' : '#000', fontSize: 18, marginTop: 6}}>No Messages</Text>
+                                        <Pressable 
+                                            onPress={() => navigation.navigate('ChannelSettings', { chat_id: chat_id })} 
+                                            style={{backgroundColor: '#4F46E5', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, marginTop: 24}}
+                                            accessible={true}
+                                            accessibilityLabel='Add a member'
+                                            accessibilityHint='Navigates to channel settings to add a member'
+                                            accessibilityRole='button'
+                                        >
                                             <Text style={{fontSize: 18, color: '#fff'}}>Add a member!</Text>
                                         </Pressable>
                                     </View>
@@ -242,7 +252,13 @@ export default function Channel({ route, navigation }) {
                     {/* Modal for handling update and delete */}
                     <Modal isVisible={isModalVisible}>
                         <View style={styles.modal}>
-                            <Pressable onPress={() => setIsModalVisible(prev => !prev)}>
+                            <Pressable 
+                                onPress={() => setIsModalVisible(prev => !prev)}
+                                accessible={true}
+                                accessibilityLabel='Close modal'
+                                accessibilityHint='Closes the modal'
+                                accessibilityRole='button'
+                            >
                                 <Ionicons name='exit-outline' style={{ textAlign: 'right' }} size={24} color={'#fff'} />
                             </Pressable>
                             <Text style={styles.text}>Edit a message</Text>
@@ -253,12 +269,28 @@ export default function Channel({ route, navigation }) {
                                 placeholderTextColor={'#ffffff60'}
                                 style={styles.input}
                                 autoFocus={true}
+                                accessibilityLabel='Edit message input'
+                                accessibilityHint='Type in here to edit your message'
                             />
                             <View>
                                 {/* Button above hides modal */}
-                                <Button title='Delete' onPress={deleteMessage} />
+                                <Button 
+                                    title='Delete'
+                                    onPress={deleteMessage}
+                                    accessible={true}
+                                    accessibilityLabel='Delete message'
+                                    accessibilityHint='Deletes the current message'
+                                    accessibilityRole='button'
+                                />
                                 {/* Button Below creates a channel */}
-                                <Button title='Update' onPress={updateMessage} />
+                                <Button 
+                                    title='Update' 
+                                    onPress={updateMessage} 
+                                    accessible={true}
+                                    accessibilityLabel='Update message'
+                                    accessibilityHint='Updates the message with the text in the input'
+                                    accessibilityRole='button'
+                                />
                             </View>
                         </View>
                     </Modal>

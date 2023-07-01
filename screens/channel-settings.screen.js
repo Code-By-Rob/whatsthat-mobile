@@ -13,7 +13,8 @@ import {
     SafeAreaView,
     StyleSheet,
     Text,
-    View
+    View,
+    useColorScheme
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import ChannelHeader from "../components/channel-header.component";
@@ -30,6 +31,8 @@ const searchUrl = serverURL + '/search'
 
 export default function ChannelSettings({ route, navigation }) {
 
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
     const isFocused = useIsFocused();
     const { chat_id } = route.params;
     const [token, setToken] = useState(null);
@@ -231,25 +234,41 @@ export default function ChannelSettings({ route, navigation }) {
 
     return (
         <SafeAreaView style={styles.parent}>
-            <View style={styles.container}>
+            <View style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#ffffff' }]}>
                 <ChannelHeader navigation={navigation} />
-                <Text style={ styles.title }>Channel Settings</Text>
+                <Text style={[styles.title, { color: isDarkMode ? '#fff' : '#000' }]}>Channel Settings</Text>
                 <CustomTextInput
                     handleChange={setChannelName}
                     value={channelName}
+                    accessibilityLabel={'Channel Name Input'}
+                    accessibilityHint={'Input to change the name of the channel'}
                 />
                 {/* <Pressable onPress={updateChannel} style={styles.button}>
                     <Text style={[styles.text, { textAlign: 'center' }]}>Save</Text>
                 </Pressable> */}
                 <CustomButton onPressFunction={updateChannel} text='Save' />
-                <Text style={styles.title}>Member Settings</Text>
-                <View style={styles.tabs}>
+                <Text style={[styles.title, { color: isDarkMode ? '#fff' : '#000' }]}>Member Settings</Text>
+                <View style={[styles.tabs, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
                     {/* Show the channel's members */}
-                    <Pressable onPress={() => setFlag(true)} style={[styles.tabButton, { borderBottomLeftRadius: 12, borderTopLeftRadius: 12, borderEndWidth: 0 }, flag ? { backgroundColor: '#4F46E5' } : null]}>
+                    <Pressable
+                        onPress={() => setFlag(true)}
+                        style={[styles.tabButton, { borderBottomLeftRadius: 12, borderTopLeftRadius: 12, borderEndWidth: 0 }, flag ? { backgroundColor: '#4F46E5' } : null]}
+                        accessible={true}
+                        accessibilityLabel='Shows the channel members'
+                        accessibilityHint='Fills a list of the channel members that you can edit'
+                        accessibilityRole='button'
+                    >
                         <Text style={[styles.tabText, flag ? { color: '#fff' } : null]}>Members</Text>
                     </Pressable>
                     {/* Show the user's contacts */}
-                    <Pressable onPress={() => setFlag(false)} style={[styles.tabButton, { borderBottomRightRadius: 12, borderTopRightRadius: 12, borderStartWidth: 0 }, flag ? null : { backgroundColor: '#4F46E5' }]}>
+                    <Pressable
+                        onPress={() => setFlag(false)}
+                        style={[styles.tabButton, { borderBottomRightRadius: 12, borderTopRightRadius: 12, borderStartWidth: 0 }, flag ? null : { backgroundColor: '#4F46E5' }]}
+                        accessible={true}
+                        accessibilityLabel="Show the user's contacts"
+                        accessibilityHint='Fills a list of your contacts that you can add to the channel'
+                        accessibilityRole='button'
+                    >
                         <Text style={[styles.tabText, flag ? null : { color: '#fff' }]}>Contacts</Text>
                     </Pressable>
                 </View>
@@ -259,7 +278,12 @@ export default function ChannelSettings({ route, navigation }) {
                     null
                     :
                     <View style={{ marginHorizontal: 16, marginTop: 12 }}>
-                        <SearchInput handleChangeText={(text) => handleContactsSearch(text)} search={search} query={query} />   
+                        <SearchInput
+                            handleChangeText={(text) => handleContactsSearch(text)}
+                            search={search} query={query}
+                            accessibilityLabel={'Search input'}
+                            accessibilityHint={'Type text here to search through your contacts'}
+                        />   
                     </View>
                 }
                 {
@@ -270,7 +294,7 @@ export default function ChannelSettings({ route, navigation }) {
                             ListEmptyComponent={
                                 <View style={styles.emptyList}>
                                     <AntDesign name='contacts' size={64} color={'#fff'} />
-                                    <Text style={{color: '#fff', marginTop: 16}}>
+                                    <Text style={{color: isDarkMode ? '#fff' : '#000', marginTop: 16}}>
                                         {/* Add an image here */}
                                         This list is empty!
                                     </Text>
@@ -299,13 +323,23 @@ export default function ChannelSettings({ route, navigation }) {
 
 const ChannelMember = ({ first_name, last_name, user_id, image, removeUser }) => {
 
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
+
     return (
         <View style={styles.memberContainer}>
             {/* User's Image */}
             <Image style={styles.userImage} source={image ? { uri: image } : require('../assets/avataaars.png')} />
             {/* User's name */}
-            <Text style={styles.text}>{ first_name + ' ' + last_name }</Text>
-            <Pressable onPress={() => removeUser(user_id)} style={styles.redButton}>
+            <Text style={[styles.text, { color: isDarkMode ? '#fff' : '#000' }]}>{ first_name + ' ' + last_name }</Text>
+            <Pressable
+                onPress={() => removeUser(user_id)}
+                style={styles.redButton}
+                accessible={true}
+                accessibilityLabel='Remove member'
+                accessibilityHint='Removes this member from the channel'
+                accessibilityRole='button'
+            >
                 <Ionicons name='person-remove-outline' style={{color: '#fff'}} size={18} />
             </Pressable>
         </View>
@@ -322,7 +356,6 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 26,
-        color: '#fff',
         textAlign: 'center',
         marginVertical: 16
     },
@@ -359,7 +392,6 @@ const styles = StyleSheet.create({
     tabs: {
         flexDirection: 'row',
         justifyContent: 'center',
-        backgroundColor: '#000',
         paddingTop: 8,
         paddingHorizontal: 28
     },

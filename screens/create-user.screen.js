@@ -2,7 +2,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Button, Dimensions, Keyboard, KeyboardAvoidingView, StyleSheet, View } from "react-native";
+import {
+    Button,
+    Dimensions,
+    Keyboard,
+    KeyboardAvoidingView,
+    StyleSheet,
+    View,
+    useColorScheme
+} from "react-native";
 
 // COMPONENTS
 import CustomButton from "../components/custom-button.component";
@@ -16,10 +24,20 @@ import { emailValidate, passwordValidate } from "../utils/validation.util";
 import { serverURL } from "../utils/enums.util";
 const url = serverURL + '/user'; // var serverURL => './utils/enums.util.js'
 
-
+// i18n
+import { useTranslation } from 'react-i18next';
 
 export default function CreateUser({ navigation }) {
 
+    /**
+     * Translation hook (translations defined in i18n.config.js)
+     */
+    const { t } = useTranslation();
+    /**
+     * Colour Scheme for reacting to light mode and dark mode
+     */
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
     /**
      * Handle the keyboard offset to appropriately display text inputs
      */
@@ -104,8 +122,6 @@ export default function CreateUser({ navigation }) {
             && passwordValidate(password) 
             && firstname !== null || firstname !== '' 
             && lastname !== null || lastname !== '') {
-            
-            console.log('firstname, lastname, email & password is valid');
             /**
              * email & password are valid
              * So, clientside validation is complete.
@@ -128,10 +144,8 @@ export default function CreateUser({ navigation }) {
                 email: email,
                 password: password,
             }
-            console.log(dataToSend);
             await axios.post(url, dataToSend)
                 .then(response => {
-                    console.log(response);
                     /**
                      * set isLoading to false
                      * store with AsyncStorage e.g., data : { "user_id": 14, "session_token": "b5d9e7be6c97aa855f721b6e742120f2" }
@@ -142,7 +156,6 @@ export default function CreateUser({ navigation }) {
                      * if status >= 400 => badRequest
                      * if status >= 500 => server error
                      */
-                    console.log('Got here!');
                     setIsLoading(false);
                     if (response.status >= 200 && response.status < 300) {
                         storeData("id", JSON.stringify(response.data.id));
@@ -195,9 +208,8 @@ export default function CreateUser({ navigation }) {
                  * - set resolution message === 'Please enter your firstname'
                  * - error flash => firstname is empty
                  */
-                console.log('Firstname input is empty')
-                setErrorMessage(prevValues => [...prevValues, 'Firstname input is empty']);
-                setResolutionMessage(prevValues => [...prevValues, 'Please enter your firstname']);
+                setErrorMessage(prevValues => [...prevValues, t('createUserFirstnameEmptyErrorMessage')]);
+                setResolutionMessage(prevValues => [...prevValues, t('createUserFirstnameEmptyResolutionMessage1')]);
             }
             if (lastname === null || lastname === '') {
                 /**
@@ -206,9 +218,8 @@ export default function CreateUser({ navigation }) {
                  * - set resolution message === 'Please enter your lastname'
                  * - error flash => lastname is empty
                  */
-                console.log('Lastname input is empty')
-                setErrorMessage(prevValues => [...prevValues, 'Lastname input is empty']);
-                setResolutionMessage(prevValues => [...prevValues, 'Please enter your lastname']);
+                setErrorMessage(prevValues => [...prevValues, t('createUserLastnameEmptyErrorMessage')]);
+                setResolutionMessage(prevValues => [...prevValues, t('createUserLastnameEmptyResolutionMessage1')]);
             }
             if (email === null) {
                 /**
@@ -217,8 +228,8 @@ export default function CreateUser({ navigation }) {
                  * - set resolution message === 'Please enter an email'
                  * - error flash => email is empty
                  */
-                setErrorMessage(prevValues => [...prevValues, 'Email input is empty']);
-                setResolutionMessage(prevValues => [...prevValues, 'Please enter an email']);
+                setErrorMessage(prevValues => [...prevValues, t('creatUserEmailEmptyErrorMessage')]);
+                setResolutionMessage(prevValues => [...prevValues, t('createUserEmailEmptyResolutionMessage')]);
             } else if (!emailValidate(email)) {
                 /**
                  * if email is invalid
@@ -226,8 +237,8 @@ export default function CreateUser({ navigation }) {
                  * - set resolution message === 'Please enter a valid email'
                  * - error flash => email is invalid
                  */
-                setErrorMessage(prevValues => [...prevValues, 'Email entered is invalid']);
-                setResolutionMessage(prevValues => [...prevValues, 'Please enter a valid email', 'e.g., johndoe@company.com']);
+                setErrorMessage(prevValues => [...prevValues, t('createUserEmailInvalidErrorMessage')]);
+                setResolutionMessage(prevValues => [...prevValues, t('createUserEmailInvalidResolutionMessage'), 'e.g., johndoe@company.com']);
             }
             if (password === null) {
                 /**
@@ -236,8 +247,8 @@ export default function CreateUser({ navigation }) {
                  * - set resolution message === 'Please enter an password'
                  * - error flash => email is empty
                  */
-                setErrorMessage(prevValues => [...prevValues, 'Password input is empty']);
-                setResolutionMessage(prevValues => [...prevValues, 'Please enter an password']);
+                setErrorMessage(prevValues => [...prevValues, t('createUserPasswordEmptyErrorMessage')]);
+                setResolutionMessage(prevValues => [...prevValues, t('createUserPasswordEmptyResolutionMessage')]);
             } else if (!passwordValidate(password)) {
                 /**
                  * if password is invalid
@@ -245,8 +256,8 @@ export default function CreateUser({ navigation }) {
                  * - set resolution message === 'Please enter a valid password'
                  * - error flash => password invalid & flash password info
                  */
-                setErrorMessage(prevValues => [...prevValues, 'Password entered is invalid']);
-                setResolutionMessage(prevValues => [...prevValues, 'Please enter a valid password', 'Contains special character', 'Contains number', 'Longer than 8 characters']);
+                setErrorMessage(prevValues => [...prevValues, t('createUserPasswordInvalidErrorMessage')]);
+                setResolutionMessage(prevValues => [...prevValues, t('createUserPasswordInvalidResolutionMessage'), t('loginPasswordInvalidResolutionMessage2'), t('loginPasswordEmptyResolutionMessage3'), t('loginPasswordInvalidResolutionMessage4')]);
             }
         }
         /**
@@ -259,7 +270,7 @@ export default function CreateUser({ navigation }) {
     // --------------------------------------------------------------------------------------------
 
     return (
-        <KeyboardAvoidingView style={styles.container}>
+        <KeyboardAvoidingView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#ffffff' }]}>
             <View style={[styles.userDetails, { bottom: keyboardOffset }]}>
 
                 {/* FLASH ERROR */}
@@ -273,8 +284,8 @@ export default function CreateUser({ navigation }) {
                 {/* FIRST NAME INPUT */}
                 <CustomTextInput 
                     handleChange={newText => setFirstname(newText)} 
-                    label={'First Name'} 
-                    placeholder={'first name...'} 
+                    label={t('first_name')} 
+                    placeholder={`${t('first_name')}...`} 
                     autoFocus={true} 
                     autoComplete={'given-name'}
                     autoCapitalize={'words'}
@@ -284,8 +295,8 @@ export default function CreateUser({ navigation }) {
                 {/* LAST NAME INPUT */}
                 <CustomTextInput 
                     handleChange={newText => setLastname(newText)} 
-                    label={'Last Name'} 
-                    placeholder={'last name...'} 
+                    label={t('last_name')} 
+                    placeholder={`${t('last_name')}...`} 
                     autoFocus={false}
                     autoComplete={'family-name'}
                     autoCapitalize={'words'}
@@ -295,7 +306,7 @@ export default function CreateUser({ navigation }) {
                 {/* EMAIL INPUT */}
                 <CustomTextInput 
                     handleChange={newText => setEmail(newText)} 
-                    label={'Email'} 
+                    label={t('email')} 
                     placeholder={'example@email.com...'} 
                     autoFocus={false} 
                     autoComplete={'email'}
@@ -306,22 +317,31 @@ export default function CreateUser({ navigation }) {
                 {/* PASSWORD INPUT */}
                 <CustomTextInput 
                     handleChange={newText => setPassword(newText)} 
-                    label={'Password'} 
-                    placeholder={'password...'} 
+                    label={t('password')} 
+                    placeholder={`${t('password')}...`} 
                     autoFocus={false} 
                     autoComplete={'new-password'}
                     secureTextEntry={true}
                     textContentType={'password'} 
                 />
                 {/* SUBMIT BUTTON */}
-                <CustomButton text={'Create Account'} onPressFunction={createUser} />
+                <CustomButton
+                    text={'Create Account'}
+                    onPressFunction={createUser}
+                    accessibilityLabel='Create Account'
+                    accessibilityHint='Press this button to create your account and then login'
+                />
 
                 {/* NAVIGATION BUTTON */}
                 <Button
-                    title="Already have an account?"
+                    title={t('hasAccountButton')}
                     onPress={() =>
                         navigation.navigate('Login')
                     }
+                    accessible={true}
+                    accessibilityLabel='Login'
+                    accessibilityHint='Navigate to the login screen'
+                    accessibilityRole='button'
                 />
             </View>
         </KeyboardAvoidingView>

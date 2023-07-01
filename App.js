@@ -3,7 +3,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
+import { useColorScheme } from 'react-native';
 import Toast, { ErrorToast, SuccessToast } from 'react-native-toast-message';
+import './i18n.config';
 import ChannelSettings from './screens/channel-settings.screen';
 import Channel from './screens/channel.screen';
 import ChatsScreen from './screens/chats.screen';
@@ -83,10 +85,14 @@ function ChatStackScreen() {
 }
 
 function Main() {
+
+  const theme = useColorScheme();
+  const isDarkMode = theme === 'dark';
+
   return (
     <Tab.Navigator 
       screenOptions={({ route }) => ({
-        tabBarStyle: { backgroundColor: '#000', borderTopWidth: 0 },
+        tabBarStyle: { backgroundColor: isDarkMode ? '#000' : '#fff', borderTopWidth: 0 },
         tabBarIcon: ({ focused, colour, size }) => {
           colour = '#4f46e5'
           let iconName;

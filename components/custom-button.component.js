@@ -1,9 +1,23 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 
-export default function CustomButton({ onPressFunction, text = 'Button' }) {
+export default function CustomButton({ 
+    onPressFunction, 
+    text = 'Button', 
+    accessible = true, 
+    accessibilityLabel = 'Button',
+    accessibilityHint = 'Button action',
+    accessibilityRole = 'Button'
+}) {
     return (
         <View>
-            <Pressable style={styles.brandedStyles} onPress={onPressFunction}>
+            <Pressable
+                style={styles.brandedStyles}
+                onPress={onPressFunction}
+                accessible={accessible}
+                accessibilityLabel={accessibilityLabel}
+                accessibilityHint={accessibilityHint}
+                accessibilityRole={accessibilityRole}
+            >
                 <Text style={styles.buttonLabel}>{text}</Text>
             </Pressable>
         </View>

@@ -3,7 +3,15 @@ import { useIsFocused } from '@react-navigation/native';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
-import { Image, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import {
+    Image,
+    Pressable,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    View,
+    useColorScheme
+} from 'react-native';
 import Toast from 'react-native-toast-message';
 import CustomButton from '../components/custom-button.component';
 import CustomTextInput from '../components/text-input.component';
@@ -16,6 +24,8 @@ const userDataUrl = serverURL + '/user'; // var serverURL => './utils/enums.util
 
 export default function UserSettingScreen ({ navigation }) {
 
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
     const isFocused = useIsFocused();
     const [isEdit, setIsEdit] = useState(false);
     const [userId, setUserId] = useState(null);
@@ -191,18 +201,29 @@ export default function UserSettingScreen ({ navigation }) {
 
     return (
         <SafeAreaView style={styles.parent}>
-            <View style={styles.container}>
+            <View style={[styles.container, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
                 <UserSettingsHeader />
                 <View>
                     {/* Pressable User Image */}
-                    <Pressable onPress={pickImage}>
+                    <Pressable
+                        onPress={pickImage}
+                        accessible={true}
+                        accessibilityLabel='Image picker'
+                        accessibilityHint='Allows you to pick and image from your gallery'
+                        accessibilityRole='button'
+                    >
                         <Image 
                             style={styles.userImage}
                             source={imageUri ? { uri: imageUri } : require('../assets/avataaars.png')}
                         />
                     </Pressable>
                     <View style={{marginVertical: 12}}>
-                        <CustomButton onPressFunction={() => isEdit ? handleSave() : setIsEdit(prev => !prev)} text={isEdit ? 'Save' : 'Edit'} />
+                        <CustomButton
+                            onPressFunction={() => isEdit ? handleSave() : setIsEdit(prev => !prev)}
+                            text={isEdit ? 'Save' : 'Edit'}
+                            accessibilityLabel={`${isEdit ? 'Save Changes' : 'Edit Profile'}`}
+                            accessibilityHint={`${isEdit ? 'Save the changes you made to your account' : 'Make an edit to your account'}`}
+                        />
                     </View>
                     {
                         isEdit ?
@@ -212,45 +233,60 @@ export default function UserSettingScreen ({ navigation }) {
                                 value={user?.first_name}
                                 handleChange={(text) => setUser(prev => ({...prev, first_name: text}))}
                                 placeholder={first_name}
+                                accessibilityLabel='First name'
+                                accessibilityHint='This input allows you to change your first name'
                             />
                             <CustomTextInput 
                                 label={'Last name'}
                                 value={user?.last_name}
                                 handleChange={(text) => setUser(prev => ({...prev, last_name: text}))}
                                 placeholder={last_name}
+                                accessibilityLabel='Last name'
+                                accessibilityHint='This input allows you to change your last name'
                             />
                             <CustomTextInput 
                                 label={'Email'}
                                 value={user?.email}
                                 handleChange={(text) => setUser(prev => ({...prev, email: text}))}
                                 placeholder={email}
+                                accessibilityLabel='Email'
+                                accessibilityHint='This input allows you to change your email'
                             />
                             <CustomTextInput 
                                 label={'Password'}
                                 value={user?.password}
                                 handleChange={(text) => setUser(prev => ({...prev, password: text}))}
+                                accessibilityLabel='Password'
+                                accessibilityHint='This input allows you to change your password'
                             />
                         </View>
                         :
                         <View>
-                                <View>
-                                    <UserDetails 
-                                        label={'First name'}
-                                        detail={first_name}
-                                    />
-                                    <UserDetails 
-                                        label={'Last name'}
-                                        detail={last_name}
-                                    />
-                                    <UserDetails 
-                                        label={'Email'}
-                                        detail={email}
-                                    />
-                                </View>
+                            <View>
+                                <UserDetails 
+                                    label={'First name'}
+                                    detail={first_name}
+                                />
+                                <UserDetails 
+                                    label={'Last name'}
+                                    detail={last_name}
+                                />
+                                <UserDetails 
+                                    label={'Email'}
+                                    detail={email}
+                                />
+                            </View>
                         </View>
                     }
                 </View>
-                <Pressable style={styles['logout-button']} onPress={() => logout()}>
+                <Pressable
+                    style={styles['logout-button']}
+                    onPress={() => logout()}
+                    accessible={true}
+                    accessibilityLabel='Logout'
+                    accessibilityHint='Logs you out and navigates to the login screen'
+                    accessibilityRole='button'
+                >
                     <Text style={styles['logout-text']}>Logout</Text>
                 </Pressable>
             </View>

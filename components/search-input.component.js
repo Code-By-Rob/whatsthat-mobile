@@ -1,16 +1,21 @@
 import {
     AntDesign
-} from '@expo/vector-icons'
+} from '@expo/vector-icons';
 import {
     Pressable,
     StyleSheet,
     TextInput,
-    View
-} from 'react-native'
+    View,
+    useColorScheme
+} from 'react-native';
 
-export default function SearchInput({ handleChangeText, search, query }) {
+export default function SearchInput({ handleChangeText, search, query, accessibilityLabel, accessibilityHint }) {
+
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
+
     return (
-        <View style={styles.searchContainer}>
+        <View style={[styles.searchContainer, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
             <TextInput 
                 style={styles.input}
                 placeholder={'Search...'}
@@ -19,9 +24,18 @@ export default function SearchInput({ handleChangeText, search, query }) {
                 autoCapitalize={'words'}
                 onChangeText={handleChangeText}
                 value={query}
+                accessibilityLabel={accessibilityLabel}
+                accessibilityHint={accessibilityHint}
                 // onPressIn={() => setFlag(tabsFlagOptions['search'])}
             />
-            <Pressable onPress={search} style={styles.searchButton}>
+            <Pressable
+                onPress={search}
+                style={styles.searchButton}
+                accessible={true}
+                accessibilityLabel='Search'
+                accessibilityHint='Initiates the search for the entered text'
+                accessibilityRole='button'
+            >
                 <AntDesign name='rightcircleo' size={32} color={'#4F46E5'} />
             </Pressable>
         </View>
@@ -30,7 +44,6 @@ export default function SearchInput({ handleChangeText, search, query }) {
 
 const styles = StyleSheet.create({
     searchContainer: {
-        backgroundColor: '#000',
         flexDirection: 'row',
         justifyContent: 'center',
     },

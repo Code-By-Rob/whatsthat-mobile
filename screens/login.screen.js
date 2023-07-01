@@ -2,7 +2,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Button, Dimensions, Keyboard, KeyboardAvoidingView, StyleSheet, View } from "react-native";
+import {
+    Button,
+    Dimensions,
+    Keyboard,
+    KeyboardAvoidingView,
+    StyleSheet,
+    View,
+    useColorScheme
+} from "react-native";
 
 // COMPONENTS
 import CustomButton from "../components/custom-button.component";
@@ -16,10 +24,20 @@ import { emailValidate, passwordValidate } from "../utils/validation.util";
 import { serverURL } from "../utils/enums.util";
 const url = serverURL + '/login'; // var serverURL => './utils/enums.util.js'
 
-
+// i18n
+import { useTranslation } from 'react-i18next';
 
 export default function Login({ navigation }) {
 
+    /**
+     * Translation hook (translations defined in i18n.config.js)
+     */
+    const { t } = useTranslation();
+    /**
+     * Colour Scheme for reacting to light mode and dark mode
+     */
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
     /**
      * Handle the keyboard offset to appropriately display text inputs
      */
@@ -92,9 +110,6 @@ export default function Login({ navigation }) {
          * - 500 { errorMessage: `Server Error` }
          * set isLoading to false & handle screen transfer
          */
-        console.log(email);
-        console.log(password);
-        console.log('Setting Error Message to empty array');
         setErrorMessage([]);
         setResolutionMessage([]);
         if (emailValidate(email) && passwordValidate(password)) {
@@ -108,7 +123,6 @@ export default function Login({ navigation }) {
             console.log(url);
             await axios.post(url, dataToSend)
                 .then(response => {
-                    console.log('inside axios promise!');
                     /**
                      * set isLoading to false
                      * store with AsyncStorage e.g., data : { "user_id": 14, "session_token": "b5d9e7be6c97aa855f721b6e742120f2" }
@@ -121,9 +135,6 @@ export default function Login({ navigation }) {
                      */
                     setIsLoading(false);
                     if (response.status >= 200 && response.status < 300) {
-                        console.log(response.data);
-                        console.log('logging id', JSON.stringify(response.data.id));
-                        console.log('token', JSON.stringify(response.data.token));
                         storeData('id', JSON.stringify(response.data.id));
                         storeData('token', response.data.token);
                         /**
@@ -143,7 +154,7 @@ export default function Login({ navigation }) {
                              * Show the error flash with the response.data.errorMessage
                              */
                             setErrorMessage([data]);
-                            setResolutionMessage(['You have an active account', 'Your email is spelt correctly', 'your password is spelt correctly']);
+                            setResolutionMessage([t('activeAccountErrorMessage1'), t('activeAccountErrorMessage2'), t('activeAccountErrorMessage3')]);
                         } else if (status >= 500) {
                             /**
                              * Do something with a server error
@@ -151,12 +162,12 @@ export default function Login({ navigation }) {
                              * Show the error flash with the response.data.errorMessage
                              */
                             setErrorMessage([data]);
-                            setResolutionMessage(['Wait 2 minutes and try again', 'Or contact a member of staff']);
+                            setResolutionMessage([t('loginServerErrorMessage1'), t('loginServerErrorMessage2')]);
                         }
                     } else if (err.request) {
                         console.log(err.request);
-                        setErrorMessage(['Network Error']);
-                        setResolutionMessage(['Check your wifi connection is on', 'Check that your data is turned on', 'Try again in a couple of minutes']);
+                        setErrorMessage([t('loginNetworkErrorMessage')]);
+                        setResolutionMessage([t('loginNetworkResolutionMessage1'), t('loginNetworkResolutionMessage2'), t('loginNetworkResolutionMessage3')]);
                     } else {
                         console.log('Error', err.message);
                         setErrorMessage([err.message]);
@@ -190,8 +201,8 @@ export default function Login({ navigation }) {
                  * - set resolution message === 'Please enter a valid email'
                  * - error flash => email is invalid
                  */
-                setErrorMessage(prevValues => [...prevValues, 'Email entered is invalid']);
-                setResolutionMessage(prevValues => [...prevValues, 'Please enter a valid email', 'e.g., johndoe@company.com']);
+                setErrorMessage(prevValues => [...prevValues, t('loginEmailEmptyErrorMessage')]);
+                setResolutionMessage(prevValues => [...prevValues, t('loginEmailResolutionMessage1'), 'e.g., johndoe@company.com']);
                 console.log('Email Val logging errormessage: ',errorMessage);
             }
             if (password === null) {
@@ -202,8 +213,8 @@ export default function Login({ navigation }) {
                  * - set resolution message === 'Please enter an password'
                  * - error flash => email is empty
                  */
-                setErrorMessage(prevValues => [...prevValues, 'Password input is empty']);
-                setResolutionMessage(prevValues => [...prevValues, 'Please enter an password', 'Contains special character', 'Contains number', 'Longer than 8 characters']);
+                setErrorMessage(prevValues => [...prevValues, t('loginPasswordEmptyErrorMessage')]);
+                setResolutionMessage(prevValues => [...prevValues, t('loginPasswordEmptyResolutionMessage1'), t('loginPasswordEmptyResolutionMessage2'), t('loginPasswordEmptyResolutionMessage3'), t('loginPasswordEmptyResolutionMessage4')]);
                 console.log('Password null logging errormessage: ',errorMessage);
             } else
             if (!passwordValidate(password)) {
@@ -214,8 +225,8 @@ export default function Login({ navigation }) {
                  * - set resolution message === 'Please enter a valid password'
                  * - error flash => password invalid & flash password info
                  */
-                setErrorMessage(prevValues => [...prevValues, 'Password entered is invalid']);
-                setResolutionMessage(prevValues => [...prevValues, 'Please enter a valid password', 'Contains special character', 'Contains number', 'Longer than 8 characters']);
+                setErrorMessage(prevValues => [...prevValues, t('loginPasswordInvalidErrorMessage')]);
+                setResolutionMessage(prevValues => [...prevValues, t('loginPasswordInvalidResolutionMessage1'), t('loginPasswordInvalidResolutionMessage2'), t('loginPasswordInvalidResolutionMessage3'), t('loginPasswordInvalidResolutionMessage4')]);
                 console.log('Password Val logging errormessage: ',errorMessage);
             }
         }
@@ -224,7 +235,7 @@ export default function Login({ navigation }) {
     // --------------------------------------------------------------------------------------------
 
     return (
-        <KeyboardAvoidingView style={styles.container}>
+        <KeyboardAvoidingView style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#ffffff' }]}>
             <View style={[styles.userDetails, { bottom: keyboardOffset }]}>
 
                 {/* FLASH ERROR */}
@@ -237,7 +248,7 @@ export default function Login({ navigation }) {
                 {/* EMAIL INPUT */}
                 <CustomTextInput 
                     handleChange={newEmail => setEmail(newEmail)} 
-                    label={'Email'} 
+                    label={t('email')} 
                     placeholder={'example@email.com...'} 
                     autoFocus={true} 
                     autoComplete={'email'}
@@ -249,8 +260,8 @@ export default function Login({ navigation }) {
                 {/* PASSWORD INPUT */}
                 <CustomTextInput 
                     handleChange={newPassword => setPassword(newPassword)} 
-                    label={'Password'} 
-                    placeholder={'password...'} 
+                    label={t("password")} 
+                    placeholder={`${t("password")}...`} 
                     autoFocus={false}
                     autoComplete={'current-password'}
                     secureTextEntry={true}
@@ -258,14 +269,23 @@ export default function Login({ navigation }) {
                 />
 
                 {/* SUBMIT BUTTON */}
-                <CustomButton text={'Login'} onPressFunction={loginUser} />
+                <CustomButton
+                    text={t('login')}
+                    onPressFunction={loginUser}
+                    accessibilityLabel='Login'
+                    accessibilityHint='login to your account'
+                />
 
                 {/* NAVIGATION BUTTON */}
                 <Button
-                    title="New? Create and Account!"
+                    title={t('newAccountButton')}
                     onPress={() =>
                         navigation.navigate('CreateUser')
                     }
+                    accessible={true}
+                    accessibilityLabel='Create Account'
+                    accessibilityHint='Navigate to the create account screen'
+                    accessibilityRole='button'
                 />
             </View>
         </KeyboardAvoidingView>

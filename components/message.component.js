@@ -15,7 +15,13 @@ export default function Message({ message, message_id, image, isUser, timestamp,
     return (
         <View style={ isUser ? styles.isUserContainer : styles.notUserContainer}>
             <Image style={styles.messageImage} source={image ? { uri: image } : require('../assets/avataaars.png')} />
-            <Pressable onPress={() => handleModal(message, message_id)}>
+            <Pressable 
+                onPress={() => handleModal(message, message_id)}
+                accessible={true}
+                accessibilityLabel='Edit & delete message'
+                accessibilityHint='Opens a modal with options to edit and delete the message'
+                accessibilityRole='button'
+            >
                 <View style={isUser ? styles.isUserMessage : styles.notUserMessage}>
                     <Text style={styles.message}>{message}</Text>
                     <Text style={ isUser ? styles.userMessageTimestamp : styles.messageTimestamp}>{formatTimestamp(timestamp)}</Text>

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TextInput, View } from 'react-native'
+import { StyleSheet, Text, TextInput, View, useColorScheme } from 'react-native';
 /**
  * TODO: Add TextInput ToolTip prop => tooltip ? showToolTip : null
  * docs => https://reactnative.dev/docs/textinput
@@ -18,12 +18,18 @@ export default function CustomTextInput({
     selectionColor = '#4F46E5', // Added quality
     textContentType = 'none',
     value,
+    accessibilityLabel,
+    accessibilityHint
 }) {
+
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
+
     return (
         <View>
-            <Text style={styles.label}>{label}</Text>
+            <Text style={[styles.label, { color: isDarkMode ? '#cbd5e1' : '#1f2937' }]}>{label}</Text>
             <TextInput 
-                style={styles.input}
+                style={[styles.input, { color: isDarkMode ? '#cbd5e1' : '#1f2937' }]}
                 placeholder={placeholder}
                 placeholderTextColor={'#475549'}
                 autoFocus={autoFocus}
@@ -36,6 +42,8 @@ export default function CustomTextInput({
                 selectionColor={selectionColor}
                 textContentType={textContentType}
                 value={value}
+                accessibilityLabel={accessibilityLabel}
+                accessibilityHint={accessibilityHint}
             />
         </View>
     )
@@ -53,13 +61,11 @@ const styles = StyleSheet.create({
         borderColor: '#4F46E5',
         borderRadius: 12,
         width: '75%',
-        color: '#ffffff',
     },
     label: {
         width: '65%',
         marginTop: 6,
         marginLeft: 'auto',
         marginRight: 'auto',
-        color: '#cbd5e1'
     }
 })

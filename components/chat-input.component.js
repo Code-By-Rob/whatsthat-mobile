@@ -6,21 +6,34 @@ import {
     Pressable,
     StyleSheet,
     TextInput,
-    View
+    View,
+    useColorScheme
 } from 'react-native';
 
 export default function ChatInput({ message, setMessage, sendMessage }) {
 
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
             <TextInput
                 style={styles.input}
                 onChangeText={setMessage}
                 value={message}
                 placeholder='message...'
                 placeholderTextColor={'#4F46E5'}
+                accessibilityLabel='message input'
+                accessibilityHint='Enter your message to be sent to the group chat'
             />
-            <Pressable style={styles.sendButton} onPress={sendMessage}>
+            <Pressable 
+                style={styles.sendButton}
+                accessible={true}
+                accessibilityLabel='Send your message'
+                accessibilityHint='Sends your current message to the group chat'
+                accessibilityRole='button'
+                onPress={sendMessage}
+                >
                 <AntDesign name='rightcircleo' size={32} color={'#4F46E5'} />
             </Pressable>
         </View>
@@ -34,7 +47,6 @@ const styles = StyleSheet.create({
         height: 48,
         width: windowWidth,
         flexDirection: 'row',
-        backgroundColor: '#000',
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',

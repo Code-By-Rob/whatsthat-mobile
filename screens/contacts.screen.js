@@ -13,7 +13,8 @@ import {
     SafeAreaView,
     StyleSheet,
     Text,
-    View
+    View,
+    useColorScheme
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import Contact from '../components/contact.component';
@@ -28,6 +29,8 @@ const blockedUrl = serverURL + '/blocked'
 export default function ContactsScreen ({}) {
 
     // * STATES
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
     const [token, setToken] = useState(null);
     const [userId, setUserId] = useState(null);
     const [contacts, setContacts] = useState([]);
@@ -262,24 +265,51 @@ export default function ContactsScreen ({}) {
     return (
         <SafeAreaView style={styles.parent}>
             <KeyboardAvoidingView style={styles.keyboardAvoidingContainer}>
-                <SearchInput handleChangeText={(text) => handleSearchChange(text)} search={search} query={query} />
-                <View style={styles.tabs}>
+                <SearchInput 
+                    handleChangeText={(text) => handleSearchChange(text)}
+                    search={search}
+                    query={query}
+                    accessibilityLabel={'Search'}
+                    accessibilityHint={'Search contacts and other users'}
+                />
+                <View style={[styles.tabs, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
                     {/* Show the user's contacts */}
-                    <Pressable onPress={() => getContacts(token)} style={[styles.tabButton, { borderBottomLeftRadius: 12, borderTopLeftRadius: 12, borderEndWidth: 0 }, flag === tabsFlagOptions['contacts'] ? { backgroundColor: '#4F46E5' } : null]}>
+                    <Pressable
+                        onPress={() => getContacts(token)}
+                        style={[styles.tabButton, { borderBottomLeftRadius: 12, borderTopLeftRadius: 12, borderEndWidth: 0 }, flag === tabsFlagOptions['contacts'] ? { backgroundColor: '#4F46E5' } : null]}
+                        accessible={true}
+                        accessibilityLabel='Show contacts'
+                        accessibilityHint='Show a list of your contacts'
+                        accessibilityRole='button'
+                    >
                         <Text style={[styles.tabText, flag === tabsFlagOptions['contacts'] ? { color: '#fff' } : null]}>Contacts</Text>
                     </Pressable>
                     {/* Show the user's search results */}
-                    <Pressable onPress={() => setFlag(tabsFlagOptions['search'])} style={[styles.tabButton, flag === tabsFlagOptions['search'] ? { backgroundColor: '#4F46E5' } : null]}>
+                    <Pressable
+                        onPress={() => setFlag(tabsFlagOptions['search'])}
+                        style={[styles.tabButton, flag === tabsFlagOptions['search'] ? { backgroundColor: '#4F46E5' } : null]}
+                        accessible={true}
+                        accessibilityLabel='Show search'
+                        accessibilityHint='Shows a list of your search results'
+                        accessibilityRole='button'
+                    >
                         <Text style={[styles.tabText, flag === tabsFlagOptions['search'] ? { color: '#fff' } : null]}>Search</Text>
                     </Pressable>
                     {/* Show the user's blocked list */}
-                    <Pressable onPress={() => getBlocked()} style={[styles.tabButton, { borderBottomRightRadius: 12, borderTopRightRadius: 12, borderStartWidth: 0 }, flag === tabsFlagOptions['blocked'] ? { backgroundColor: '#4F46E5' } : null]}>
+                    <Pressable
+                        onPress={() => getBlocked()}
+                        style={[styles.tabButton, { borderBottomRightRadius: 12, borderTopRightRadius: 12, borderStartWidth: 0 }, flag === tabsFlagOptions['blocked'] ? { backgroundColor: '#4F46E5' } : null]}
+                        accessible={true}
+                        accessibilityLabel='Show blocked'
+                        accessibilityHint='Shows a list of your blocked users'
+                        accessibilityRole='button'
+                    >
                         <Text style={[styles.tabText, flag === tabsFlagOptions['blocked'] ? { color: '#fff' } : null]}>Blocked</Text>
                     </Pressable>
                 </View>
                 <SafeAreaView style={styles.contactsContainer}>
                     <FlatList
-                        style={styles.flatlist}
+                        style={{ backgroundColor: isDarkMode ? '#000' : '#fff' }}
                         data={flag === tabsFlagOptions['contacts'] ? contacts : flag === tabsFlagOptions['search'] ? searchUsers : blocked}
                         ListEmptyComponent={
                             <View style={styles.emptyList}>
@@ -350,9 +380,6 @@ const styles = StyleSheet.create({
     contactsContainer: {
         flex: 20,
     },
-    flatlist: {
-        backgroundColor: '#000',
-    },
     emptyList: {
         flex: 1,
         width: '100%',
@@ -364,7 +391,6 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-evenly',
-        backgroundColor: '#000',
         paddingTop: 8,
         paddingHorizontal: 28
     },

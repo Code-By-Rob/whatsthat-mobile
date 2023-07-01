@@ -1,10 +1,14 @@
-import { StyleSheet, Text, View } from "react-native"
+import { StyleSheet, Text, View, useColorScheme } from "react-native";
 
 export default function UserDetails({ label, detail }) {
+
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
+
     return (
         <View style={styles.container}>
-            <Text style={styles.label}>{label}</Text>
-            <Text style={styles.detail}>{detail}</Text>
+            <Text style={[styles.label, { color: '#cbd5e1' }]}>{label}</Text>
+            <Text style={[styles.detail, { color: isDarkMode ? '#fff' : '#000' }]}>{detail}</Text>
         </View>
     )
 }
@@ -18,7 +22,6 @@ const styles = StyleSheet.create({
         marginTop: 6,
         marginLeft: 'auto',
         marginRight: 'auto',
-        color: '#cbd5e1'
     },
     detail: {
         height: 40,
@@ -28,7 +31,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         borderColor: '#4F46E5',
         borderRadius: 12,
-        color: '#ffffff',
         width: '75%',
         marginLeft: 'auto',
         marginRight: 'auto',

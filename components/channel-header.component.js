@@ -7,17 +7,34 @@ import {
     Pressable,
     StyleSheet,
     Text,
-    View
+    View,
+    useColorScheme
 } from 'react-native';
 
 export default function ChannelHeader({ navigation, name, chat_id }) {
+
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
+
     return (
-        <View style={styles.header}>
-            <Pressable onPress={() => navigation.goBack()}>
+        <View style={[styles.header, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
+            <Pressable 
+                onPress={() => navigation.goBack()}
+                accessible={true}
+                accessibilityLabel='Go back'
+                accessibilityHint='Navigates to the previous screen'
+                accessibilityRole='button'
+            >
                 <Ionicons name='arrow-back' size={24} color="#4F46E5" />
             </Pressable>
             <Text style={styles.text}>{name}</Text>
-            <Pressable onPress={() => navigation.navigate('ChannelSettings', { chat_id: chat_id })}>
+            <Pressable 
+                onPress={() => navigation.navigate('ChannelSettings', { chat_id: chat_id })}
+                accessible={true}
+                accessibilityLabel='Go to channel settings'
+                accessibilityHint='Navigates to the channel settings screen'
+                accessibilityRole='button'
+            >
                 <Entypo name='dots-three-vertical' size={24} color="#4F46E5" />
             </Pressable>
         </View>
@@ -32,7 +49,6 @@ const styles = StyleSheet.create({
         height: 50,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        backgroundColor: '#000',
         alignItems: 'center',
         paddingHorizontal: 24,
         shadowColor: '#fff',

@@ -1,9 +1,19 @@
-import { Dimensions, Image, Pressable, StyleSheet, View } from 'react-native';
+import { Dimensions, Image, Pressable, StyleSheet, View, useColorScheme } from 'react-native';
 
 export default function ChatHeader({ showModal = () => console.log('Create chat!') }) {
+
+    const theme = useColorScheme();
+    const isDarkMode = theme === 'dark';
+
     return (
-        <View style={styles.header}>
-            <Pressable onPress={showModal}>
+        <View style={[styles.header, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
+            <Pressable
+                onPress={showModal}
+                accessible={true}
+                accessibilityLabel='Channel Creation'
+                accessibilityHint='Opens a modal that allows you to create a channel'
+                accessibilityRole='button'
+            >
                 <Image 
                     style={styles.button}
                     source={require('../assets/write.png')}
@@ -21,7 +31,6 @@ const styles = StyleSheet.create({
         height: 50,
         flexDirection: 'row',
         justifyContent: 'flex-end',
-        backgroundColor: '#000000',
         alignItems: 'center',
         paddingHorizontal: 24,
         shadowColor: '#fff',
