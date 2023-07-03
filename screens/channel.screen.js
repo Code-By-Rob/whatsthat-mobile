@@ -50,7 +50,6 @@ export default function Channel({ route, navigation }) {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [loading, setLoading] = useState(true);
     const [drafts, setDrafts] = useState([]);
-    const [schedule, setSchedule] = useState([]);
     const [draftsModal, setDraftsModal] = useState(false);
 
     const handleModal = (message, message_id) => {
@@ -231,9 +230,7 @@ export default function Channel({ route, navigation }) {
     const scheduleMessage = async (index, timeInMS = 10000) => {
         // Find draft by index
         const myDrafts = JSON.parse(await AsyncStorage.getItem('drafts'));
-        console.log(myDrafts);
-        console.log(myDrafts[index].message);
-        setSchedule(prev => [...prev, myDrafts[index].message]);
+        const toSchedule = myDrafts[index].message;
         drafts.splice(index, 1);
         await AsyncStorage.setItem('drafts', JSON.stringify(drafts));
         setDrafts(drafts);
@@ -242,9 +239,10 @@ export default function Channel({ route, navigation }) {
             text1: 'Message Scheduled!',
             text2: 'Your message has been scheduled.'
         });
+        console.log('logging scheduled message: ',toSchedule);
         // Call the scheduling function
         setTimeout(() => {
-            sendDraftAsMessage(String(schedule[schedule.length - 1]));
+            sendDraftAsMessage(toSchedule);
             Toast.show({
                 type: 'success',
                 text1: 'Scheduled Message Sent!',
