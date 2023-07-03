@@ -120,8 +120,9 @@ export default function CreateUser({ navigation }) {
         console.log('createUser function called!');
         if (emailValidate(email) 
             && passwordValidate(password) 
-            && firstname !== null || firstname !== '' 
-            && lastname !== null || lastname !== '') {
+            && (firstname !== null || firstname.length > 0)
+            && (lastname !== null || lastname.length > 0)) {
+                console.log('Got here with empty inputs');
             /**
              * email & password are valid
              * So, clientside validation is complete.

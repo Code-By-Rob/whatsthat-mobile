@@ -189,8 +189,8 @@ export default function Login({ navigation }) {
                  * - set resolution message === 'Please enter an email'
                  * - error flash => email is empty
                  */
-                setErrorMessage(prevValues => [...prevValues, 'Email input is empty']);
-                setResolutionMessage(prevValues => [...prevValues, 'Please enter an email']);
+                setErrorMessage(prevValues => [...prevValues, t('creatUserEmailEmptyErrorMessage')]);
+                setResolutionMessage(prevValues => [...prevValues, t('createUserEmailEmptyResolutionMessage')]);
             } else
             if (!emailValidate(email)) {
                 console.log(emailValidate(email));
