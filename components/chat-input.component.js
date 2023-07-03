@@ -18,7 +18,7 @@ export default function ChatInput({ message, setMessage, sendMessage }) {
     return (
         <View style={[styles.container, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
             <TextInput
-                style={styles.input}
+                style={[styles.input, { color: isDarkMode ? '#fff' : '#000' }]}
                 onChangeText={setMessage}
                 value={message}
                 placeholder='message...'
@@ -64,7 +64,6 @@ const styles = StyleSheet.create({
         height: 36,
         borderWidth: 1,
         padding: 10,
-        color: '#fff',
         borderWidth: 2,
         borderColor: '#4F46E5'
     },
