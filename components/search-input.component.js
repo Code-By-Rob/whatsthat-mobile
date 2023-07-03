@@ -17,7 +17,7 @@ export default function SearchInput({ handleChangeText, search, query, accessibi
     return (
         <View style={[styles.searchContainer, { backgroundColor: isDarkMode ? '#000' : '#fff' }]}>
             <TextInput 
-                style={styles.input}
+                style={[styles.input, { color: isDarkMode ? '#fff' : '#000' }]}
                 placeholder={'Search...'}
                 placeholderTextColor={'#475549'}
                 autoCorrect={true}
@@ -58,7 +58,6 @@ const styles = StyleSheet.create({
         borderColor: '#4F46E5',
         borderRadius: 12,
         width: '70%',
-        color: '#ffffff',
     },
     searchButton: {
         width: '20%',
